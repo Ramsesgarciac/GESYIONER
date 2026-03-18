@@ -12,11 +12,12 @@ interface EmployeesTableProps {
   loading: boolean
   error: string | null
   desactivar: (id: number) => Promise<void>
+  onEditar: (empleado: Empleado) => void
 }
 
 const RESULTS_PER_PAGE = 7
 
-export function EmployeesTable({ empleados, loading, error, desactivar }: EmployeesTableProps) {
+export function EmployeesTable({ empleados, loading, error, desactivar, onEditar }: EmployeesTableProps) {
   const router = useRouter()
   const [currentPage, setCurrentPage] = useState(1)
 
@@ -33,9 +34,9 @@ export function EmployeesTable({ empleados, loading, error, desactivar }: Employ
     router.push(`/empleado/${id}`)
   }
 
-  const handleEdit = (e: React.MouseEvent, id: number) => {
+  const handleEdit = (e: React.MouseEvent, empleado: Empleado) => {
     e.stopPropagation()
-    console.log("Editando empleado:", id)
+    onEditar(empleado)
   }
 
   const handleDelete = async (e: React.MouseEvent, id: number) => {
@@ -114,7 +115,7 @@ export function EmployeesTable({ empleados, loading, error, desactivar }: Employ
                       size="sm"
                       variant="outline"
                       className="border-btn-blue text-btn-blue hover:bg-btn-blue/10 hover:text-btn-blue h-8 px-3 text-xs font-medium bg-btn-edit-bg"
-                      onClick={(e) => handleEdit(e, empleado.id_empleado)}
+                      onClick={(e) => handleEdit(e, empleado)}
                     >
                       <Pencil className="w-3.5 h-3.5 mr-1.5" />
                       Editar

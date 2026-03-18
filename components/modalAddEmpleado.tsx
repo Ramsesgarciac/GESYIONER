@@ -1,12 +1,12 @@
 "use client"
 
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect } from "react"
 import { X, ChevronDown, Check, Upload, FileText, Loader2, CheckCircle2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useCategorias } from "@/hooks/useCategoriaEmpleados"
-import { CreateEmpleadoDto } from "@/types/Empleado"
-import { createEmpleado } from "../lib/services/Empleado.service"
+import { CreateEmpleadoDto, Empleado } from "@/types/Empleado"
+import { createEmpleado, updateEmpleado } from "../lib/services/Empleado.service"
 import { useTiposDocs } from "@/hooks/UseTipoDocs"
 import { uploadDocumento } from "../lib/services/Document.service"
 
@@ -14,6 +14,7 @@ interface AddEmployeeModalProps {
     open: boolean
     onClose: () => void
     onSuccess: () => void
+    empleadoEditar?: Empleado | null  // Si viene, es modo edición
 }
 
 const INITIAL_FORM: CreateEmpleadoDto = {
@@ -30,7 +31,6 @@ const INITIAL_FORM: CreateEmpleadoDto = {
 
 type FormErrors = Partial<Record<keyof CreateEmpleadoDto, string>>
 
-// Estado de cada documento en el step 2
 interface DocUploadState {
     file: File | null
     uploading: boolean
@@ -38,7 +38,9 @@ interface DocUploadState {
     error: string | null
 }
 
-export function AddEmployeeModal({ open, onClose, onSuccess }: AddEmployeeModalProps) {
+export function AddEmployeeModal({ open, onClose, onSuccess, empleadoEditar }: AddEmployeeModalProps) {
+    const isEditMode = !!empleadoEditar
+
     const [step, setStep] = useState(1)
     const [form, setForm] = useState<CreateEmpleadoDto>(INITIAL_FORM)
     const [categoryOpen, setCategoryOpen] = useState(false)
@@ -46,15 +48,30 @@ export function AddEmployeeModal({ open, onClose, onSuccess }: AddEmployeeModalP
     const [errors, setErrors] = useState<FormErrors>({})
     const [submitError, setSubmitError] = useState<string | null>(null)
     const [createdEmpleadoId, setCreatedEmpleadoId] = useState<number | null>(null)
-
-    // Map de id_tipo_doc -> estado de upload
     const [docStates, setDocStates] = useState<Record<number, DocUploadState>>({})
 
     const { categorias, loading: loadingCategorias } = useCategorias()
     const { tiposDocs, loading: loadingTipos } = useTiposDocs()
-
-    // Refs para los inputs file ocultos
     const fileInputRefs = useRef<Record<number, HTMLInputElement | null>>({})
+
+    // Prellenar formulario en modo edición
+    useEffect(() => {
+        if (open && empleadoEditar) {
+            setForm({
+                nombre: empleadoEditar.nombre ?? "",
+                curp: empleadoEditar.curp ?? "",
+                rfc: empleadoEditar.rfc ?? "",
+                discapacidad: empleadoEditar.discapacidad ?? "",
+                puesto: empleadoEditar.puesto ?? "",
+                area_asignada: empleadoEditar.area_asignada ?? "",
+                numero_empleado: empleadoEditar.numero_empleado ?? 0,
+                id_categoria: empleadoEditar.id_categoria ?? 0,
+                salario_actual: empleadoEditar.salario_actual ?? undefined,
+            })
+        } else if (open && !empleadoEditar) {
+            setForm(INITIAL_FORM)
+        }
+    }, [open, empleadoEditar])
 
     if (!open) return null
 
@@ -91,18 +108,25 @@ export function AddEmployeeModal({ open, onClose, onSuccess }: AddEmployeeModalP
                 discapacidad: form.discapacidad || undefined,
                 salario_actual: form.salario_actual || undefined,
             }
-            const nuevo = await createEmpleado(payload)
-            setCreatedEmpleadoId(nuevo.id_empleado)
 
-            // Inicializar estado de docs
-            const initialDocStates: Record<number, DocUploadState> = {}
-            tiposDocs.forEach(t => {
-                initialDocStates[t.id_tipo_doc] = { file: null, uploading: false, uploaded: false, error: null }
-            })
-            setDocStates(initialDocStates)
-            setStep(2)
+            if (isEditMode && empleadoEditar) {
+                // ── Modo edición: PATCH ──────────────────────────────────────────
+                await updateEmpleado(empleadoEditar.id_empleado, payload)
+                onSuccess()
+                handleClose()
+            } else {
+                // ── Modo creación: POST + pasar a step 2 ─────────────────────────
+                const nuevo = await createEmpleado(payload)
+                setCreatedEmpleadoId(nuevo.id_empleado)
+                const initialDocStates: Record<number, DocUploadState> = {}
+                tiposDocs.forEach(t => {
+                    initialDocStates[t.id_tipo_doc] = { file: null, uploading: false, uploaded: false, error: null }
+                })
+                setDocStates(initialDocStates)
+                setStep(2)
+            }
         } catch (err) {
-            setSubmitError(err instanceof Error ? err.message : "Error al crear empleado")
+            setSubmitError(err instanceof Error ? err.message : "Error al guardar empleado")
         } finally {
             setSubmitting(false)
         }
@@ -118,18 +142,12 @@ export function AddEmployeeModal({ open, onClose, onSuccess }: AddEmployeeModalP
     const handleUpload = async (id_tipo_doc: number) => {
         const state = docStates[id_tipo_doc]
         if (!state?.file || !createdEmpleadoId) return
-
         setDocStates(prev => ({
             ...prev,
             [id_tipo_doc]: { ...prev[id_tipo_doc], uploading: true, error: null }
         }))
-
         try {
-            await uploadDocumento({
-                id_empleado: createdEmpleadoId,
-                id_tipo_doc,
-                file: state.file,
-            })
+            await uploadDocumento({ id_empleado: createdEmpleadoId, id_tipo_doc, file: state.file })
             setDocStates(prev => ({
                 ...prev,
                 [id_tipo_doc]: { ...prev[id_tipo_doc], uploading: false, uploaded: true }
@@ -162,7 +180,6 @@ export function AddEmployeeModal({ open, onClose, onSuccess }: AddEmployeeModalP
         handleClose()
     }
 
-    // Calcular progreso de documentos
     const totalDocs = tiposDocs.length
     const uploadedDocs = Object.values(docStates).filter(s => s.uploaded).length
     const obligatoriosPendientes = tiposDocs
@@ -171,40 +188,40 @@ export function AddEmployeeModal({ open, onClose, onSuccess }: AddEmployeeModalP
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
-            {/* Backdrop */}
             <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={handleClose} />
 
-            {/* Modal */}
             <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden">
 
                 {/* Header */}
                 <div className="px-6 pt-6 pb-4">
                     <button
                         onClick={handleClose}
-                        className="absolute top-4 right-4 p-1.5 rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray:600 transition-colors"
+                        className="absolute top-4 right-4 p-1.5 rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
                     >
                         <X className="w-4 h-4" />
                     </button>
 
                     <h2 className="text-lg font-semibold text-center text-foreground mb-4">
-                        Registro del empleado
+                        {isEditMode ? "Editar empleado" : "Registro del empleado"}
                     </h2>
 
-                    {/* Tabs */}
-                    <div className="flex rounded-lg overflow-hidden border border-border">
-                        {["Datos", "Documentacion"].map((label, i) => (
-                            <button
-                                key={label}
-                                onClick={() => createdEmpleadoId && setStep(i + 1)}
-                                className={`flex-1 py-2 text-sm font-medium transition-colors ${step === i + 1
-                                    ? "bg-primary text-primary-foreground"
-                                    : "bg-white text-muted-foreground hover:bg-muted/50"
-                                    }`}
-                            >
-                                {label}
-                            </button>
-                        ))}
-                    </div>
+                    {/* Tabs — solo en modo creación */}
+                    {!isEditMode && (
+                        <div className="flex rounded-lg overflow-hidden border border-border">
+                            {["Datos", "Documentacion"].map((label, i) => (
+                                <button
+                                    key={label}
+                                    onClick={() => createdEmpleadoId && setStep(i + 1)}
+                                    className={`flex-1 py-2 text-sm font-medium transition-colors ${step === i + 1
+                                        ? "bg-primary text-primary-foreground"
+                                        : "bg-white text-muted-foreground hover:bg-muted/50"
+                                        }`}
+                                >
+                                    {label}
+                                </button>
+                            ))}
+                        </div>
+                    )}
                 </div>
 
                 {/* ─── Step 1: Datos ─────────────────────────────────────────────── */}
@@ -261,7 +278,6 @@ export function AddEmployeeModal({ open, onClose, onSuccess }: AddEmployeeModalP
                                     </span>
                                     <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${categoryOpen ? "rotate-180" : ""}`} />
                                 </button>
-
                                 {categoryOpen && (
                                     <div className="absolute z-10 w-full mt-1 bg-white border border-border rounded-md shadow-lg max-h-44 overflow-y-auto">
                                         {categorias.length === 0 ? (
@@ -340,16 +356,16 @@ export function AddEmployeeModal({ open, onClose, onSuccess }: AddEmployeeModalP
                             onClick={handleSubmitStep1}
                             disabled={submitting}
                         >
-                            {submitting ? "Guardando..." : "Siguiente"}
+                            {submitting
+                                ? "Guardando..."
+                                : isEditMode ? "Guardar cambios" : "Siguiente"}
                         </Button>
                     </div>
                 )}
 
-                {/* ─── Step 2: Documentación ─────────────────────────────────────── */}
-                {step === 2 && (
+                {/* ─── Step 2: Documentación (solo modo creación) ────────────────── */}
+                {step === 2 && !isEditMode && (
                     <div className="px-6 pb-6 flex flex-col gap-4">
-
-                        {/* Cabecera con ID y progreso */}
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
                                 <CheckCircle2 className="w-4 h-4 text-primary" />
@@ -362,7 +378,6 @@ export function AddEmployeeModal({ open, onClose, onSuccess }: AddEmployeeModalP
                             </span>
                         </div>
 
-                        {/* Barra de progreso */}
                         <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden">
                             <div
                                 className="h-full bg-primary rounded-full transition-all duration-300"
@@ -370,7 +385,6 @@ export function AddEmployeeModal({ open, onClose, onSuccess }: AddEmployeeModalP
                             />
                         </div>
 
-                        {/* Lista de tipos de documento */}
                         {loadingTipos ? (
                             <div className="flex items-center justify-center py-8 gap-2 text-muted-foreground">
                                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -380,27 +394,19 @@ export function AddEmployeeModal({ open, onClose, onSuccess }: AddEmployeeModalP
                             <div className="space-y-2 max-h-[50vh] overflow-y-auto pr-1">
                                 {tiposDocs.map(tipo => {
                                     const state = docStates[tipo.id_tipo_doc] ?? { file: null, uploading: false, uploaded: false, error: null }
-
                                     return (
                                         <div
                                             key={tipo.id_tipo_doc}
-                                            className={`rounded-xl border p-3 transition-colors ${state.uploaded
-                                                ? "border-primary/30 bg-primary/5"
-                                                : "border-border bg-white"
+                                            className={`rounded-xl border p-3 transition-colors ${state.uploaded ? "border-primary/30 bg-primary/5" : "border-border bg-white"
                                                 }`}
                                         >
-                                            {/* Nombre del documento */}
                                             <div className="flex items-start justify-between gap-2 mb-2">
                                                 <div className="flex items-center gap-2">
                                                     <FileText className={`w-4 h-4 shrink-0 ${state.uploaded ? "text-primary" : "text-muted-foreground"}`} />
                                                     <div>
-                                                        <p className="text-xs font-medium text-foreground leading-tight">
-                                                            {tipo.nombre_doc}
-                                                        </p>
+                                                        <p className="text-xs font-medium text-foreground leading-tight">{tipo.nombre_doc}</p>
                                                         {tipo.descripcion && (
-                                                            <p className="text-[10px] text-muted-foreground mt-0.5 leading-tight">
-                                                                {tipo.descripcion}
-                                                            </p>
+                                                            <p className="text-[10px] text-muted-foreground mt-0.5 leading-tight">{tipo.descripcion}</p>
                                                         )}
                                                     </div>
                                                 </div>
@@ -410,16 +416,12 @@ export function AddEmployeeModal({ open, onClose, onSuccess }: AddEmployeeModalP
                                                             Obligatorio
                                                         </span>
                                                     )}
-                                                    {state.uploaded && (
-                                                        <Check className="w-4 h-4 text-primary" />
-                                                    )}
+                                                    {state.uploaded && <Check className="w-4 h-4 text-primary" />}
                                                 </div>
                                             </div>
 
-                                            {/* Acciones */}
                                             {!state.uploaded ? (
                                                 <div className="flex items-center gap-2">
-                                                    {/* Input file oculto */}
                                                     <input
                                                         type="file"
                                                         accept=".pdf,.jpg,.jpeg,.png"
@@ -427,8 +429,6 @@ export function AddEmployeeModal({ open, onClose, onSuccess }: AddEmployeeModalP
                                                         ref={el => { fileInputRefs.current[tipo.id_tipo_doc] = el }}
                                                         onChange={e => handleFileChange(tipo.id_tipo_doc, e.target.files?.[0] ?? null)}
                                                     />
-
-                                                    {/* Selector de archivo */}
                                                     <button
                                                         type="button"
                                                         onClick={() => fileInputRefs.current[tipo.id_tipo_doc]?.click()}
@@ -436,8 +436,6 @@ export function AddEmployeeModal({ open, onClose, onSuccess }: AddEmployeeModalP
                                                     >
                                                         {state.file ? state.file.name : "Seleccionar archivo..."}
                                                     </button>
-
-                                                    {/* Botón subir */}
                                                     <Button
                                                         size="sm"
                                                         className="h-7 px-3 text-xs bg-primary hover:bg-primary/90 text-primary-foreground shrink-0"
@@ -458,7 +456,6 @@ export function AddEmployeeModal({ open, onClose, onSuccess }: AddEmployeeModalP
                                                 </p>
                                             )}
 
-                                            {/* Error */}
                                             {state.error && (
                                                 <p className="text-[11px] text-destructive mt-1">{state.error}</p>
                                             )}
@@ -468,7 +465,6 @@ export function AddEmployeeModal({ open, onClose, onSuccess }: AddEmployeeModalP
                             </div>
                         )}
 
-                        {/* Botón finalizar */}
                         <Button
                             className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
                             onClick={handleFinish}
@@ -483,8 +479,6 @@ export function AddEmployeeModal({ open, onClose, onSuccess }: AddEmployeeModalP
         </div>
     )
 }
-
-// ─── Helper Field ──────────────────────────────────────────────────────────────
 
 function Field({
     label,

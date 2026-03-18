@@ -8,12 +8,24 @@ import { Plus, Search } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useEmpleados } from "@/hooks/useEmpleados"
+import { Empleado } from "@/types/Empleado"
 
 export default function Page() {
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [modalOpen, setModalOpen] = useState(false)
+  const [empleadoEditar, setEmpleadoEditar] = useState<Empleado | null>(null)
 
   const { empleados, loading, error, refetch, desactivar } = useEmpleados('activos')
+
+  const handleAgregar = () => {
+    setEmpleadoEditar(null)
+    setModalOpen(true)
+  }
+
+  const handleEditar = (empleado: Empleado) => {
+    setEmpleadoEditar(empleado)
+    setModalOpen(true)
+  }
 
   return (
     <div className="flex min-h-screen bg-gray-50">
@@ -38,7 +50,7 @@ export default function Page() {
                 </div>
                 <Button
                   className="bg-btn-blue hover:bg-btn-blue-hover text-white"
-                  onClick={() => setModalOpen(true)}
+                  onClick={handleAgregar}
                 >
                   <Plus className="w-4 h-4 mr-2" />
                   Agregar empleado
@@ -51,6 +63,7 @@ export default function Page() {
               loading={loading}
               error={error}
               desactivar={desactivar}
+              onEditar={handleEditar}
             />
           </div>
         </main>
@@ -62,11 +75,16 @@ export default function Page() {
 
       <AddEmployeeModal
         open={modalOpen}
-        onClose={() => setModalOpen(false)}
+        onClose={() => {
+          setModalOpen(false)
+          setEmpleadoEditar(null)
+        }}
         onSuccess={() => {
           setModalOpen(false)
+          setEmpleadoEditar(null)
           refetch()
         }}
+        empleadoEditar={empleadoEditar}
       />
     </div>
   )
