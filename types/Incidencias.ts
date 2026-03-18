@@ -1,4 +1,4 @@
-import { Empleado } from '../empleado/empleado.types';
+import { Empleado } from './Empleado';
 
 // ─── Relaciones ────────────────────────────────────────────────────────────────
 

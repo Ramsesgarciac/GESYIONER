@@ -1,4 +1,4 @@
-import { Incidencia, CreateIncidenciaDto, UpdateIncidenciaDto } from './incidencia.types';
+import { Incidencia, CreateIncidenciaDto, UpdateIncidenciaDto } from '@/types/Incidencias';
 
 const BASE_URL = 'http://localhost:3000/api/incidencias';
 

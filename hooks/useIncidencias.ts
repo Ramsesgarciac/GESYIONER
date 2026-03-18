@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Incidencia, CreateIncidenciaDto, UpdateIncidenciaDto } from './incidencia.types';
+import { Incidencia, CreateIncidenciaDto, UpdateIncidenciaDto } from '@/types/Incidencias';
 import {
     getIncidencias,
     getIncidenciaById,
@@ -7,7 +7,7 @@ import {
     createIncidencia,
     updateIncidencia,
     deleteIncidencia,
-} from './incidencia.service';
+} from '../lib/services/IncidenciaService.service'
 
 // ─── useIncidencias (lista global) ────────────────────────────────────────────
 
