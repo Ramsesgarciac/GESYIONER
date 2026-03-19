@@ -86,9 +86,9 @@ export default function EmpleadoPage() {
             <div className="w-14 h-14 rounded-2xl bg-white border-2 border-white shadow-md flex items-center justify-center text-primary font-bold text-lg ring-2 ring-primary/20">
               {getInitials(empleado.nombre)}
             </div>
-            <span className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border ${empleado.activo ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-red-50 text-red-700 border-red-200"
+            <span className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border ${empleado.activo ? "bg-blue-50 text-blue-700 border-blue-200" : "bg-red-50 text-red-700 border-red-200"
               }`}>
-              <span className={`w-1.5 h-1.5 rounded-full ${empleado.activo ? "bg-emerald-500" : "bg-red-500"}`} />
+              <span className={`w-1.5 h-1.5 rounded-full ${empleado.activo ? "bg-blue-500" : "bg-red-500"}`} />
               {empleado.activo ? "Activo" : "Inactivo"}
             </span>
           </div>
@@ -150,7 +150,7 @@ export default function EmpleadoPage() {
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">Documentación</h3>
                     {listado && (
-                      <span className="text-xs font-medium text-primary bg-primary/8 px-2.5 py-1 rounded-full">
+                      <span className="text-xs font-medium text-blue-700 bg-blue-50 border border-blue-100 px-2.5 py-1 rounded-full">
                         {listado.estadisticas.porcentaje_completado}% completado
                       </span>
                     )}
@@ -175,11 +175,11 @@ export default function EmpleadoPage() {
                   ) : listado?.documentos && listado.documentos.length > 0 ? (
                     <div className="space-y-2 max-h-[calc(100vh-360px)] overflow-y-auto pr-0.5">
                       {listado.documentos.map((doc) => (
-                        <div key={doc.id_tipo_doc} className={`rounded-xl border p-3.5 transition-all duration-200 ${doc.subido ? "border-primary/20 bg-primary/4" : "border-border bg-gray-50/60"
+                        <div key={doc.id_tipo_doc} className={`rounded-xl border p-3.5 transition-all duration-200 ${doc.subido ? "border-blue-100 bg-blue-50/60" : "border-border bg-gray-50/60"
                           }`}>
                           {/* Fila superior: icono + nombre + badge */}
                           <div className="flex items-start gap-3 mb-2.5">
-                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 mt-0.5 ${doc.subido ? "bg-primary/10" : "bg-muted"}`}>
+                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 mt-0.5 ${doc.subido ? "bg-blue-100" : "bg-muted"}`}>
                               <FileText className={`w-4 h-4 ${doc.subido ? "text-primary" : "text-muted-foreground"}`} />
                             </div>
                             <div className="flex-1 min-w-0">
@@ -191,7 +191,7 @@ export default function EmpleadoPage() {
                               </div>
                               {doc.descripcion && <p className="text-[11px] text-muted-foreground mt-0.5">{doc.descripcion}</p>}
                               {doc.subido && doc.documento ? (
-                                <p className="text-[11px] text-primary/70 mt-0.5 truncate">
+                                <p className="text-[11px] text-blue-600/70 mt-0.5 truncate">
                                   {doc.documento.nombre_archivo} · v{doc.documento.version} · {formatFecha(doc.documento.fecha_carga)}
                                 </p>
                               ) : (
