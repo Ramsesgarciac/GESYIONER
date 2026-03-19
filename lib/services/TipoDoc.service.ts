@@ -1,4 +1,4 @@
-import { TipoDoc, CreateTipoDocDto, UpdateTipoDocDto } from '@/types/TipoDocss';
+import { TipoDoc, CreateTipoDocDto, UpdateTipoDocDto } from '@/types/TipoDocs';
 
 const BASE_URL = 'http://localhost:3000/api/tipos-documentos';
 

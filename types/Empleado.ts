@@ -1,5 +1,6 @@
 // ─── Relaciones ───────────────────────────────────────────────────────────────
 
+
 export interface CategoriaEmpleado {
     id_categoria: number;
     nombre: string;
@@ -17,17 +18,19 @@ export interface DocEmpleado {
     url: string;
 }
 
-export interface HojaVida {
-    id_hoja_vida: number;
-    descripcion: string;
-}
-
 export interface Contrato {
     id_contrato: number;
     tipo: string;
     fecha_inicio: string;
     fecha_fin?: string;
 }
+
+export interface HojaVida {
+    id_hoja_vida: number;
+    id_empleado: number;
+    empleado?: Empleado;
+}
+
 
 // ─── Empleado principal ────────────────────────────────────────────────────────
 

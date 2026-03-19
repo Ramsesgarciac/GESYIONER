@@ -1,4 +1,4 @@
-import { TipoIncidencia, CreateTipoIncidenciaDto, UpdateTipoIncidenciaDto } from './tipo-incidencia.types';
+import { TipoIncidencia, CreateTipoIncidenciaDto, UpdateTipoIncidenciaDto } from '@/types/TipoIincidencia';
 
 const BASE_URL = 'http://localhost:3000/api/tipos-incidencias';
 

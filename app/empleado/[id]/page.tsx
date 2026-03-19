@@ -70,9 +70,9 @@ export default function EmpleadoPage() {
 
     return (
       <div className="bg-white rounded-2xl border border-border overflow-hidden">
-        <div className="h-14 bg-primary relative" />
-        <div className="px-5 pb-5">
-          <div className="flex items-end justify-between -mt-7 mb-4">
+        {/* Eliminada la franja verde (h-14 bg-primary relative) */}
+        <div className="px-5 pb-5 pt-5"> {/* Añadido pt-5 y quitado -mt-7 */}
+          <div className="flex items-end justify-between mb-4">
             <div className="w-14 h-14 rounded-2xl bg-white border-2 border-white shadow-md flex items-center justify-center text-primary font-bold text-lg ring-2 ring-primary/20">
               {getInitials(empleado.nombre)}
             </div>
