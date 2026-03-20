@@ -23,6 +23,7 @@ import { AddIncidenciaModal } from "@/components/modalAddIncidencia"
 import { AddEventoModal } from "@/components/modalAddEvento"
 import { UpdateDocModal, HistorialDocModal, PreviewDocModal } from "@/components/modalDocuments"
 import { AddContratoModal } from "@/components/modalAddContrato"
+import { IncidenciasTabla } from "@/components/tableIncidencias"  // ← NUEVO
 import { Contrato } from "@/types/Contrato"
 
 function formatFecha(fecha: string): string {
@@ -138,8 +139,6 @@ function HistorialContratosModal({ open, onClose, id_empleado }: {
                         </p>
                       </div>
                     </div>
-
-                    {/* Botones */}
                     <div className="flex items-center gap-1.5 pl-9">
                       <button
                         onClick={() => setPreviewId({ id: contrato.id_contrato, nombre: contrato.nombre_archivo })}
@@ -168,7 +167,6 @@ function HistorialContratosModal({ open, onClose, id_empleado }: {
         </div>
       </div>
 
-      {/* Vista previa dentro del historial — z-[60] para estar encima */}
       {previewId && (
         <PreviewContratoModal
           open={!!previewId}
@@ -309,8 +307,7 @@ export default function EmpleadoPage() {
             <div className="w-14 h-14 rounded-2xl bg-white border-2 border-white shadow-md flex items-center justify-center text-primary font-bold text-lg ring-2 ring-primary/20">
               {getInitials(empleado.nombre)}
             </div>
-            <span className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border ${empleado.activo ? "bg-blue-50 text-blue-700 border-blue-200" : "bg-red-50 text-red-700 border-red-200"
-              }`}>
+            <span className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border ${empleado.activo ? "bg-blue-50 text-blue-700 border-blue-200" : "bg-red-50 text-red-700 border-red-200"}`}>
               <span className={`w-1.5 h-1.5 rounded-full ${empleado.activo ? "bg-blue-500" : "bg-red-500"}`} />
               {empleado.activo ? "Activo" : "Inactivo"}
             </span>
@@ -339,8 +336,7 @@ export default function EmpleadoPage() {
           <div className="flex gap-1 bg-white border border-border rounded-xl p-1 mb-6 shadow-sm">
             {tabs.map(tab => (
               <button key={tab.id} onClick={() => setActiveTab(tab.id)}
-                className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-medium transition-all duration-200 ${activeTab === tab.id ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-                  }`}>
+                className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-medium transition-all duration-200 ${activeTab === tab.id ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground hover:bg-muted/50"}`}>
                 {tab.label}
               </button>
             ))}
@@ -367,9 +363,7 @@ export default function EmpleadoPage() {
                 )}
               </div>
 
-              {/* Columna derecha: Documentos + Contrato */}
               <div className="lg:col-span-3 flex flex-col gap-5">
-
                 {/* Documentación */}
                 <div className="bg-white rounded-2xl border border-border p-5 flex-1">
                   <div className="flex items-center justify-between mb-4">
@@ -398,8 +392,7 @@ export default function EmpleadoPage() {
                   ) : listado?.documentos && listado.documentos.length > 0 ? (
                     <div className="space-y-2 max-h-72 overflow-y-auto pr-0.5">
                       {listado.documentos.map((doc) => (
-                        <div key={doc.id_tipo_doc} className={`rounded-xl border p-3.5 transition-all duration-200 ${doc.subido ? "border-blue-100 bg-blue-50/60" : "border-border bg-gray-50/60"
-                          }`}>
+                        <div key={doc.id_tipo_doc} className={`rounded-xl border p-3.5 transition-all duration-200 ${doc.subido ? "border-blue-100 bg-blue-50/60" : "border-border bg-gray-50/60"}`}>
                           <div className="flex items-start gap-3 mb-2.5">
                             <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 mt-0.5 ${doc.subido ? "bg-blue-100" : "bg-muted"}`}>
                               <FileText className={`w-4 h-4 ${doc.subido ? "text-blue-600" : "text-muted-foreground"}`} />
@@ -460,16 +453,11 @@ export default function EmpleadoPage() {
                 <div className="bg-white rounded-2xl border border-border p-5">
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">Contrato</h3>
-                    <Button
-                      size="sm"
-                      className="bg-btn-blue hover:bg-btn-blue-hover text-white h-8"
-                      onClick={() => setContratoModalOpen(true)}
-                    >
+                    <Button size="sm" className="bg-btn-blue hover:bg-btn-blue-hover text-white h-8" onClick={() => setContratoModalOpen(true)}>
                       <Plus className="w-3.5 h-3.5 mr-1.5" />
                       {contratoVigente ? "Actualizar contrato" : "Agregar contrato"}
                     </Button>
                   </div>
-
                   {loadingContrato ? (
                     <div className="flex items-center gap-2 text-muted-foreground">
                       <Loader2 className="w-4 h-4 animate-spin" /><span className="text-sm">Cargando...</span>
@@ -496,24 +484,17 @@ export default function EmpleadoPage() {
                               {formatFecha(contratoVigente.fecha_inicio)} — {formatFecha(contratoVigente.fecha_fin)}
                             </span>
                           </div>
-                          {/* Botones */}
                           <div className="flex items-center gap-1.5">
-                            <button
-                              onClick={() => setPreviewContrato({ id: contratoVigente.id_contrato, nombre_archivo: contratoVigente.nombre_archivo })}
-                              className="flex items-center gap-1 text-[11px] text-primary font-medium bg-primary/8 hover:bg-primary/15 px-2.5 py-1.5 rounded-lg transition-colors"
-                            >
+                            <button onClick={() => setPreviewContrato({ id: contratoVigente.id_contrato, nombre_archivo: contratoVigente.nombre_archivo })}
+                              className="flex items-center gap-1 text-[11px] text-primary font-medium bg-primary/8 hover:bg-primary/15 px-2.5 py-1.5 rounded-lg transition-colors">
                               <Eye className="w-3 h-3" />Ver
                             </button>
-                            <button
-                              onClick={() => downloadContrato(contratoVigente.id_contrato, contratoVigente.nombre_archivo)}
-                              className="flex items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground font-medium bg-muted hover:bg-muted/80 px-2.5 py-1.5 rounded-lg transition-colors"
-                            >
+                            <button onClick={() => downloadContrato(contratoVigente.id_contrato, contratoVigente.nombre_archivo)}
+                              className="flex items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground font-medium bg-muted hover:bg-muted/80 px-2.5 py-1.5 rounded-lg transition-colors">
                               <Download className="w-3 h-3" />Descargar
                             </button>
-                            <button
-                              onClick={() => setHistorialContratosOpen(true)}
-                              className="flex items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground font-medium bg-muted hover:bg-muted/80 px-2.5 py-1.5 rounded-lg transition-colors"
-                            >
+                            <button onClick={() => setHistorialContratosOpen(true)}
+                              className="flex items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground font-medium bg-muted hover:bg-muted/80 px-2.5 py-1.5 rounded-lg transition-colors">
                               <Clock className="w-3 h-3" />Historial
                             </button>
                           </div>
@@ -527,7 +508,6 @@ export default function EmpleadoPage() {
                     </div>
                   )}
                 </div>
-
               </div>
             </div>
           )}
@@ -541,38 +521,9 @@ export default function EmpleadoPage() {
                   <Plus className="w-4 h-4 mr-2" />Agregar Incidencia
                 </Button>
               </div>
-              <div className="bg-white rounded-2xl border border-border overflow-hidden shadow-sm">
-                {loadingIncidencias ? (
-                  <div className="flex items-center justify-center py-14 gap-2 text-muted-foreground">
-                    <Loader2 className="w-4 h-4 animate-spin" /><span className="text-sm">Cargando incidencias...</span>
-                  </div>
-                ) : incidencias.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center py-14 gap-2 text-muted-foreground">
-                    <AlertCircle className="w-8 h-8 opacity-30" /><p className="text-sm">No hay incidencias registradas</p>
-                  </div>
-                ) : (
-                  <Table>
-                    <TableHeader>
-                      <TableRow className="bg-primary hover:bg-primary">
-                        <TableHead className="text-primary-foreground font-semibold text-center py-3 text-xs uppercase tracking-wider">Incidencia</TableHead>
-                        <TableHead className="text-primary-foreground font-semibold text-center py-3 text-xs uppercase tracking-wider">Fecha inicio</TableHead>
-                        <TableHead className="text-primary-foreground font-semibold text-center py-3 text-xs uppercase tracking-wider">Fecha fin</TableHead>
-                        <TableHead className="text-primary-foreground font-semibold text-center py-3 text-xs uppercase tracking-wider">Observaciones</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {incidencias.map((inc) => (
-                        <TableRow key={inc.id_incidencia} className="hover:bg-muted/30 border-b border-border/50">
-                          <TableCell className="text-center py-3.5 text-sm font-medium">{inc.tipoIncidencia?.nombre ?? `Tipo ${inc.id_tipo_incidencia}`}</TableCell>
-                          <TableCell className="text-center py-3.5 text-sm text-muted-foreground">{formatFecha(inc.fecha_inicio)}</TableCell>
-                          <TableCell className="text-center py-3.5 text-sm text-muted-foreground">{formatFecha(inc.fecha_fin)}</TableCell>
-                          <TableCell className="text-center py-3.5 text-sm text-muted-foreground max-w-[200px] truncate">{inc.observaciones ?? "—"}</TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                )}
-              </div>
+
+              {/* ← ÚNICO CAMBIO: reemplaza todo el bloque anterior de tabla */}
+              <IncidenciasTabla incidencias={incidencias} loading={loadingIncidencias} />
             </div>
           )}
 
@@ -634,8 +585,12 @@ export default function EmpleadoPage() {
       </div>
 
       {/* Modales */}
-      <AddIncidenciaModal open={incidenciaModalOpen} onClose={() => setIncidenciaModalOpen(false)} onSuccess={() => { setIncidenciaModalOpen(false); refetchIncidencias() }} id_empleado={empleadoId} />
-      {/* <AddEventoModal open={eventoModalOpen} onClose={() => setEventoModalOpen(false)} onSuccess={() => { setEventoModalOpen(false); refetchEventos() }} id_empleado={empleadoId} /> */}
+      <AddIncidenciaModal
+        open={incidenciaModalOpen}
+        onClose={() => setIncidenciaModalOpen(false)}
+        onSuccess={() => { setIncidenciaModalOpen(false); refetchIncidencias() }}
+        id_empleado={empleadoId}
+      />
       <AddEventoModal
         key={`evento-modal-${empleado?.puesto ?? ''}-${empleado?.salario_actual ?? ''}`}
         open={eventoModalOpen}
