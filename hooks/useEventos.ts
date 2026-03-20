@@ -8,6 +8,16 @@ import {
     deleteEvento,
 } from '../lib/services/Evento.service';
 
+// Ordena descendente: primero por fecha, luego por id como desempate
+function ordenarDescendente(lista: Evento[]): Evento[] {
+    return [...lista].sort((a, b) => {
+        const fechaA = new Date(a.fecha_evento).getTime();
+        const fechaB = new Date(b.fecha_evento).getTime();
+        if (fechaB !== fechaA) return fechaB - fechaA;
+        return b.id_evento - a.id_evento; // más reciente creado = id mayor
+    });
+}
+
 export function useEventosByEmpleado(id_empleado: number | null) {
     const [eventos, setEventos] = useState<Evento[]>([]);
     const [loading, setLoading] = useState(false);
@@ -19,7 +29,7 @@ export function useEventosByEmpleado(id_empleado: number | null) {
         setError(null);
         try {
             const data = await getEventosByEmpleado(id_empleado);
-            setEventos(data ?? []);
+            setEventos(ordenarDescendente(data ?? []));
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Error desconocido');
         } finally {
@@ -31,15 +41,13 @@ export function useEventosByEmpleado(id_empleado: number | null) {
 
     const crear = useCallback(async (dto: CreateEventoDto): Promise<Evento> => {
         const nuevo = await createEvento(dto);
-        setEventos(prev => [...prev, nuevo].sort(
-            (a, b) => new Date(a.fecha_evento).getTime() - new Date(b.fecha_evento).getTime()
-        ));
+        setEventos(prev => ordenarDescendente([nuevo, ...prev]));
         return nuevo;
     }, []);
 
     const actualizar = useCallback(async (id: number, dto: UpdateEventoDto): Promise<Evento> => {
         const actualizado = await updateEvento(id, dto);
-        setEventos(prev => prev.map(e => e.id_evento === id ? actualizado : e));
+        setEventos(prev => ordenarDescendente(prev.map(e => e.id_evento === id ? actualizado : e)));
         return actualizado;
     }, []);
 

@@ -1,33 +1,52 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { X, ChevronDown, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useCatalogoEventos } from "@/hooks/useCatalogoEvento"
 import { CreateEventoDto } from "@/types/Evento"
 import { createEvento } from "../lib/services/Evento.service"
+import { updateEmpleado } from "../lib/services/Empleado.service"
 
 interface AddEventoModalProps {
     open: boolean
     onClose: () => void
     onSuccess: () => void
     id_empleado: number
+    cargoActual?: string
+    salarioActual?: number
 }
 
-const INITIAL_FORM = {
-    id_tipo_evento: 0,
-    fecha_evento: "",
-    cargo_anterior: "",
-    cargo_nuevo: "",
-    salario_anterior: "",
-    salario_nuevo: "",
+type FormState = {
+    id_tipo_evento: number
+    fecha_evento: string
+    cargo_anterior: string
+    cargo_nuevo: string
+    salario_anterior: string
+    salario_nuevo: string
 }
 
-type FormErrors = Partial<Record<keyof typeof INITIAL_FORM, string>>
+type FormErrors = Partial<Record<keyof FormState, string>>
 
-export function AddEventoModal({ open, onClose, onSuccess, id_empleado }: AddEventoModalProps) {
-    const [form, setForm] = useState(INITIAL_FORM)
+export function AddEventoModal({
+    open,
+    onClose,
+    onSuccess,
+    id_empleado,
+    cargoActual = "",
+    salarioActual,
+}: AddEventoModalProps) {
+    const getInitialForm = (): FormState => ({
+        id_tipo_evento: 0,
+        fecha_evento: "",
+        cargo_anterior: cargoActual,
+        cargo_nuevo: "",
+        salario_anterior: salarioActual ? String(salarioActual) : "",
+        salario_nuevo: "",
+    })
+
+    const [form, setForm] = useState<FormState>(getInitialForm())
     const [tipoOpen, setTipoOpen] = useState(false)
     const [submitting, setSubmitting] = useState(false)
     const [errors, setErrors] = useState<FormErrors>({})
@@ -35,11 +54,21 @@ export function AddEventoModal({ open, onClose, onSuccess, id_empleado }: AddEve
 
     const { catalogoEventos, loading: loadingCatalogo } = useCatalogoEventos()
 
+    useEffect(() => {
+        if (open) {
+            setForm(prev => ({
+                ...prev,
+                cargo_anterior: cargoActual,
+                salario_anterior: salarioActual ? String(salarioActual) : "",
+            }))
+        }
+    }, [open, cargoActual, salarioActual])
+
     if (!open) return null
 
     const selectedTipo = catalogoEventos.find(t => t.id_tipo_evento === form.id_tipo_evento)
 
-    const handleChange = (field: keyof typeof INITIAL_FORM, value: string | number) => {
+    const handleChange = (field: keyof FormState, value: string | number) => {
         setForm(prev => ({ ...prev, [field]: value }))
         setErrors(prev => ({ ...prev, [field]: undefined }))
     }
@@ -57,6 +86,7 @@ export function AddEventoModal({ open, onClose, onSuccess, id_empleado }: AddEve
         setSubmitting(true)
         setSubmitError(null)
         try {
+            // 1. Crear el evento
             const payload: CreateEventoDto = {
                 id_empleado,
                 id_tipo_evento: form.id_tipo_evento,
@@ -67,6 +97,16 @@ export function AddEventoModal({ open, onClose, onSuccess, id_empleado }: AddEve
                 salario_nuevo: form.salario_nuevo ? Number(form.salario_nuevo) : undefined,
             }
             await createEvento(payload)
+
+            // 2. PATCH al empleado con cargo_nuevo y/o salario_nuevo si fueron llenados
+            const patchEmpleado: Record<string, string | number> = {}
+            if (form.cargo_nuevo.trim()) patchEmpleado.puesto = form.cargo_nuevo.trim()
+            if (form.salario_nuevo) patchEmpleado.salario_actual = Number(form.salario_nuevo)
+
+            if (Object.keys(patchEmpleado).length > 0) {
+                await updateEmpleado(id_empleado, patchEmpleado)
+            }
+
             onSuccess()
             handleClose()
         } catch (err) {
@@ -77,7 +117,7 @@ export function AddEventoModal({ open, onClose, onSuccess, id_empleado }: AddEve
     }
 
     const handleClose = () => {
-        setForm(INITIAL_FORM)
+        setForm(getInitialForm())
         setErrors({})
         setSubmitError(null)
         setTipoOpen(false)
@@ -115,8 +155,7 @@ export function AddEventoModal({ open, onClose, onSuccess, id_empleado }: AddEve
                             <button
                                 type="button"
                                 onClick={() => setTipoOpen(p => !p)}
-                                className={`w-full flex items-center justify-between px-3 py-2 text-sm border rounded-lg bg-white text-left hover:bg-muted/20 transition-colors ${errors.id_tipo_evento ? "border-destructive" : "border-input"
-                                    }`}
+                                className={`w-full flex items-center justify-between px-3 py-2 text-sm border rounded-lg bg-white text-left hover:bg-muted/20 transition-colors ${errors.id_tipo_evento ? "border-destructive" : "border-input"}`}
                             >
                                 <span className={selectedTipo ? "text-foreground" : "text-muted-foreground"}>
                                     {loadingCatalogo ? "Cargando tipos..." : selectedTipo?.nombre_evento ?? "Selecciona el tipo de evento"}
@@ -133,8 +172,7 @@ export function AddEventoModal({ open, onClose, onSuccess, id_empleado }: AddEve
                                                 key={tipo.id_tipo_evento}
                                                 type="button"
                                                 onClick={() => { handleChange("id_tipo_evento", tipo.id_tipo_evento); setTipoOpen(false) }}
-                                                className={`w-full text-left px-3 py-2.5 text-sm hover:bg-muted/40 transition-colors ${form.id_tipo_evento === tipo.id_tipo_evento ? "bg-primary/10 text-primary font-medium" : "text-foreground"
-                                                    }`}
+                                                className={`w-full text-left px-3 py-2.5 text-sm hover:bg-muted/40 transition-colors ${form.id_tipo_evento === tipo.id_tipo_evento ? "bg-primary/10 text-primary font-medium" : "text-foreground"}`}
                                             >
                                                 <p className="font-medium">{tipo.nombre_evento}</p>
                                                 {tipo.descripcion && <p className="text-[11px] text-muted-foreground mt-0.5">{tipo.descripcion}</p>}
@@ -160,7 +198,7 @@ export function AddEventoModal({ open, onClose, onSuccess, id_empleado }: AddEve
                     <div className="grid grid-cols-2 gap-3">
                         <Field label="Cargo anterior">
                             <Input
-                                placeholder="Ej: Profesor Asistente"
+                                placeholder="Cargo actual del empleado"
                                 value={form.cargo_anterior}
                                 onChange={e => handleChange("cargo_anterior", e.target.value)}
                             />
@@ -179,7 +217,7 @@ export function AddEventoModal({ open, onClose, onSuccess, id_empleado }: AddEve
                         <Field label="Salario anterior">
                             <Input
                                 type="number"
-                                placeholder="Ej: 18000"
+                                placeholder="Salario actual"
                                 value={form.salario_anterior}
                                 onChange={e => handleChange("salario_anterior", e.target.value)}
                             />

@@ -635,7 +635,16 @@ export default function EmpleadoPage() {
 
       {/* Modales */}
       <AddIncidenciaModal open={incidenciaModalOpen} onClose={() => setIncidenciaModalOpen(false)} onSuccess={() => { setIncidenciaModalOpen(false); refetchIncidencias() }} id_empleado={empleadoId} />
-      <AddEventoModal open={eventoModalOpen} onClose={() => setEventoModalOpen(false)} onSuccess={() => { setEventoModalOpen(false); refetchEventos() }} id_empleado={empleadoId} />
+      {/* <AddEventoModal open={eventoModalOpen} onClose={() => setEventoModalOpen(false)} onSuccess={() => { setEventoModalOpen(false); refetchEventos() }} id_empleado={empleadoId} /> */}
+      <AddEventoModal
+        key={`evento-modal-${empleado?.puesto ?? ''}-${empleado?.salario_actual ?? ''}`}
+        open={eventoModalOpen}
+        onClose={() => setEventoModalOpen(false)}
+        onSuccess={() => { setEventoModalOpen(false); refetchEventos() }}
+        id_empleado={empleadoId}
+        cargoActual={empleado?.puesto ?? ""}
+        salarioActual={empleado?.salario_actual ? Number(empleado.salario_actual) : undefined}
+      />
       <AddContratoModal open={contratoModalOpen} onClose={() => setContratoModalOpen(false)} onSuccess={() => { setContratoModalOpen(false); refetchContratos() }} id_empleado={empleadoId} contratoVigenteId={contratoVigente?.id_contrato} />
       <UpdateDocModal open={!!updateDoc} onClose={() => setUpdateDoc(null)} onSuccess={() => { setUpdateDoc(null); refetchDocs() }} id_empleado={empleadoId} id_tipo_doc={updateDoc?.id_tipo_doc ?? 0} nombre_doc={updateDoc?.nombre_doc ?? ""} />
       <HistorialDocModal open={!!historialDoc} onClose={() => setHistorialDoc(null)} id_empleado={empleadoId} id_tipo_doc={historialDoc?.id_tipo_doc ?? 0} nombre_doc={historialDoc?.nombre_doc ?? ""} />
