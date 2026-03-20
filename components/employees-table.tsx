@@ -13,11 +13,12 @@ interface EmployeesTableProps {
   error: string | null
   desactivar: (id: number) => Promise<void>
   onEditar: (empleado: Empleado) => void
+  soloLectura?: boolean  // ← oculta botones de acción en vista inactivos
 }
 
 const RESULTS_PER_PAGE = 7
 
-export function EmployeesTable({ empleados, loading, error, desactivar, onEditar }: EmployeesTableProps) {
+export function EmployeesTable({ empleados, loading, error, desactivar, onEditar, soloLectura = false }: EmployeesTableProps) {
   const router = useRouter()
   const [currentPage, setCurrentPage] = useState(1)
 
@@ -68,7 +69,7 @@ export function EmployeesTable({ empleados, loading, error, desactivar, onEditar
   if (listaEmpleados.length === 0) {
     return (
       <div className="flex items-center justify-center py-20 text-muted-foreground text-sm">
-        No hay empleados activos.
+        {soloLectura ? "No hay empleados inactivos." : "No hay empleados activos."}
       </div>
     )
   }
@@ -88,9 +89,11 @@ export function EmployeesTable({ empleados, loading, error, desactivar, onEditar
               <TableHead className="text-primary-foreground font-semibold text-xs uppercase tracking-wider py-3 text-center">
                 Fecha de Ingreso
               </TableHead>
-              <TableHead className="text-primary-foreground font-semibold text-xs uppercase tracking-wider py-3 text-center">
-                Acciones
-              </TableHead>
+              {!soloLectura && (
+                <TableHead className="text-primary-foreground font-semibold text-xs uppercase tracking-wider py-3 text-center">
+                  Acciones
+                </TableHead>
+              )}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -109,28 +112,30 @@ export function EmployeesTable({ empleados, loading, error, desactivar, onEditar
                 <TableCell className="text-muted-foreground text-center">
                   {new Date(empleado.fecha_creacion).toLocaleDateString('es-MX')}
                 </TableCell>
-                <TableCell className="text-center">
-                  <div className="flex justify-center gap-2">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="border-btn-blue text-btn-blue hover:bg-btn-blue/10 hover:text-btn-blue h-8 px-3 text-xs font-medium bg-btn-edit-bg"
-                      onClick={(e) => handleEdit(e, empleado)}
-                    >
-                      <Pencil className="w-3.5 h-3.5 mr-1.5" />
-                      Editar
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="border-destructive text-destructive hover:bg-destructive/10 hover:text-destructive h-8 px-3 text-xs font-medium bg-btn-delete-bg"
-                      onClick={(e) => handleDelete(e, empleado.id_empleado)}
-                    >
-                      <Trash2 className="w-3.5 h-3.5 mr-1.5" />
-                      Eliminar
-                    </Button>
-                  </div>
-                </TableCell>
+                {!soloLectura && (
+                  <TableCell className="text-center">
+                    <div className="flex justify-center gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="border-btn-blue text-btn-blue hover:bg-btn-blue/10 hover:text-btn-blue h-8 px-3 text-xs font-medium bg-btn-edit-bg"
+                        onClick={(e) => handleEdit(e, empleado)}
+                      >
+                        <Pencil className="w-3.5 h-3.5 mr-1.5" />
+                        Editar
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="border-destructive text-destructive hover:bg-destructive/10 hover:text-destructive h-8 px-3 text-xs font-medium bg-btn-delete-bg"
+                        onClick={(e) => handleDelete(e, empleado.id_empleado)}
+                      >
+                        <Trash2 className="w-3.5 h-3.5 mr-1.5" />
+                        Eliminar
+                      </Button>
+                    </div>
+                  </TableCell>
+                )}
               </TableRow>
             ))}
           </TableBody>
@@ -144,36 +149,21 @@ export function EmployeesTable({ empleados, loading, error, desactivar, onEditar
           <span className="font-medium">{listaEmpleados.length}</span> resultados
         </p>
         <div className="flex items-center gap-1">
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-8 w-8 p-0 bg-transparent"
+          <Button variant="outline" size="sm" className="h-8 w-8 p-0 bg-transparent"
             onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-            disabled={currentPage === 1}
-          >
+            disabled={currentPage === 1}>
             <ChevronLeft className="w-4 h-4" />
           </Button>
           {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-            <Button
-              key={page}
-              variant={currentPage === page ? "default" : "outline"}
-              size="sm"
-              className={`h-8 w-8 p-0 ${currentPage === page
-                ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                : ""
-                }`}
-              onClick={() => setCurrentPage(page)}
-            >
+            <Button key={page} variant={currentPage === page ? "default" : "outline"} size="sm"
+              className={`h-8 w-8 p-0 ${currentPage === page ? "bg-primary text-primary-foreground hover:bg-primary/90" : ""}`}
+              onClick={() => setCurrentPage(page)}>
               {page}
             </Button>
           ))}
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-8 w-8 p-0 bg-transparent"
+          <Button variant="outline" size="sm" className="h-8 w-8 p-0 bg-transparent"
             onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-            disabled={currentPage === totalPages}
-          >
+            disabled={currentPage === totalPages}>
             <ChevronRight className="w-4 h-4" />
           </Button>
         </div>
