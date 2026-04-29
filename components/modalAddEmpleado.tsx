@@ -322,7 +322,7 @@ export function AddEmployeeModal({ open, onClose, onSuccess, empleadoEditar }: A
                             />
                         </Field>
 
-                        <Field label="Actividades a desarrollar" error={errors.area_asignada}>
+                        <Field label="Escriba el area asignada" error={errors.area_asignada}>
                             <Input
                                 placeholder="porfavor escriba el área asignada"
                                 value={form.area_asignada}
