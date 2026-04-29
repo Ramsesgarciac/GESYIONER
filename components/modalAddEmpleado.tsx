@@ -21,6 +21,7 @@ const INITIAL_FORM: CreateEmpleadoDto = {
     nombre: "",
     curp: "",
     rfc: "",
+    numero_seguridad_social: "",
     discapacidad: "",
     puesto: "",
     area_asignada: "",
@@ -61,6 +62,7 @@ export function AddEmployeeModal({ open, onClose, onSuccess, empleadoEditar }: A
                 nombre: empleadoEditar.nombre ?? "",
                 curp: empleadoEditar.curp ?? "",
                 rfc: empleadoEditar.rfc ?? "",
+                numero_seguridad_social: empleadoEditar.numero_seguridad_social ?? "",
                 discapacidad: empleadoEditar.discapacidad ?? "",
                 puesto: empleadoEditar.puesto ?? "",
                 area_asignada: empleadoEditar.area_asignada ?? "",
@@ -89,6 +91,14 @@ export function AddEmployeeModal({ open, onClose, onSuccess, empleadoEditar }: A
         else if (form.curp.length !== 18) newErrors.curp = "El CURP debe tener 18 caracteres"
         if (!form.rfc.trim()) newErrors.rfc = "El RFC es requerido"
         else if (form.rfc.length < 12) newErrors.rfc = "El RFC debe tener al menos 12 caracteres"
+        if (
+            form.numero_seguridad_social &&
+            form.numero_seguridad_social.length !== 11
+        ) {
+            newErrors.numero_seguridad_social =
+                "El NSS debe tener 11 dígitos"
+        }
+
         if (!form.id_categoria) newErrors.id_categoria = "Selecciona una categoría"
         if (!form.puesto.trim()) newErrors.puesto = "El puesto es requerido"
         if (!form.area_asignada.trim()) newErrors.area_asignada = "El área es requerida"
@@ -252,6 +262,7 @@ export function AddEmployeeModal({ open, onClose, onSuccess, empleadoEditar }: A
                                     className={errors.curp ? "border-destructive" : ""}
                                 />
                             </Field>
+
                             <Field label="RFC" error={errors.rfc}>
                                 <Input
                                     placeholder="escriba la RFC"
@@ -262,6 +273,29 @@ export function AddEmployeeModal({ open, onClose, onSuccess, empleadoEditar }: A
                                 />
                             </Field>
                         </div>
+
+                        <Field
+                            label="Número de seguridad social"
+                            error={errors.numero_seguridad_social}
+                        >
+                            <Input
+                                placeholder="escriba el NSS"
+                                value={form.numero_seguridad_social ?? ""}
+                                onChange={e =>
+                                    handleChange(
+                                        "numero_seguridad_social",
+                                        e.target.value.replace(/\D/g, "")
+                                    )
+                                }
+                                maxLength={11}
+                                className={
+                                    errors.numero_seguridad_social
+                                        ? "border-destructive"
+                                        : ""
+                                }
+                            />
+                        </Field>
+
 
                         <Field label="Categoria de empleo" error={errors.id_categoria}>
                             <div className="relative">

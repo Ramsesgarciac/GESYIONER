@@ -40,6 +40,7 @@ const tabs: { id: TabType; label: string }[] = [
   { id: "hoja-de-vida", label: "Hoja de vida" },
 ]
 
+
 function InfoRow({ icon: Icon, label, value }: { icon: any; label: string; value: string }) {
   return (
     <div className="flex items-start gap-3 py-3 border-b border-border/50 last:border-0">
@@ -235,8 +236,8 @@ export default function EmpleadoPage() {
             </div>
             {/* ─── Badge status ─── */}
             <span className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border ${empleado.activo
-                ? "bg-blue-50 text-blue-700 border-blue-200"
-                : "bg-red-50 text-red-700 border-red-200"
+              ? "bg-blue-50 text-blue-700 border-blue-200"
+              : "bg-red-50 text-red-700 border-red-200"
               }`}>
               <span className={`w-1.5 h-1.5 rounded-full ${empleado.activo ? "bg-blue-500" : "bg-red-400"}`} />
               {empleado.activo ? "Activo" : "Inactivo"}
@@ -281,6 +282,7 @@ export default function EmpleadoPage() {
                     <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-3">Datos personales</h3>
                     <div className="divide-y divide-border/40">
                       <InfoRow icon={IdCard} label="CURP" value={empleado.curp} />
+                      <InfoRow icon={CreditCard} label="NSS" value={empleado.numero_seguridad_social ?? "No especificado"} />
                       <InfoRow icon={CreditCard} label="RFC" value={empleado.rfc} />
                       <InfoRow icon={MapPin} label="Área" value={empleado.area_asignada} />
                       <InfoRow icon={Tag} label="Categoría" value={empleado.categoria?.nombre ?? `ID ${empleado.id_categoria}`} />

@@ -39,6 +39,7 @@ export interface Empleado {
     nombre: string;
     curp: string;
     rfc: string;
+    numero_seguridad_social: string;
     discapacidad?: string | null;
     puesto: string;
     area_asignada: string;
@@ -62,6 +63,7 @@ export interface CreateEmpleadoDto {
     nombre: string;
     curp: string;
     rfc: string;
+    numero_seguridad_social?: string
     discapacidad?: string;
     puesto: string;
     area_asignada: string;
