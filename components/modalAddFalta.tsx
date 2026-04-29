@@ -1,10 +1,11 @@
 "use client"
 
-import React, { useState } from "react" // Asegúrate de importar React
+import React, { useState } from "react"
 import { X, Loader2, AlertTriangle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
+import { createFaltaAdministrativa } from "@/lib/services/FaltaAdministrativa.service"
 
 interface AddFaltaModalProps {
     open: boolean
@@ -13,9 +14,16 @@ interface AddFaltaModalProps {
     onSuccess: () => void
 }
 
+type FormData = {
+    nombre: string
+    fecha: string
+    motivo: string
+    sancion: string
+}
+
 export function AddFaltaModal({ open, onClose, id_empleado, onSuccess }: AddFaltaModalProps) {
     const [loading, setLoading] = useState(false)
-    const [formData, setFormData] = useState({
+    const [formData, setFormData] = useState<FormData>({
         nombre: "",
         fecha: new Date().toISOString().split('T')[0],
         motivo: "",
@@ -24,31 +32,27 @@ export function AddFaltaModal({ open, onClose, id_empleado, onSuccess }: AddFalt
 
     if (!open) return null
 
-    // Tipamos el evento del formulario como React.FormEvent
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
         setLoading(true)
         try {
-            const response = await fetch("http://localhost:3000/api/faltas", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ ...formData, id_empleado })
+            await createFaltaAdministrativa({
+                nombre: formData.nombre,
+                fecha: formData.fecha,
+                motivo: formData.motivo,
+                sancion: formData.sancion || undefined,
+                id_empleado
             })
-
-            if (response.ok) {
-                onSuccess()
-                onClose()
-            } else {
-                alert("Error al guardar la falta")
-            }
+            onSuccess()
+            onClose()
         } catch (error) {
             console.error(error)
+            alert("Error al guardar la falta")
         } finally {
             setLoading(false)
         }
     }
 
-    // Función genérica para manejar cambios con tipos correctos
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target
         setFormData(prev => ({ ...prev, [name]: value }))
@@ -76,7 +80,7 @@ export function AddFaltaModal({ open, onClose, id_empleado, onSuccess }: AddFalt
                             required
                             placeholder="Ej. Retardo injustificado"
                             value={formData.nombre}
-                            onChange={handleChange} // Usamos la función tipada
+                            onChange={handleChange}
                         />
                     </div>
 
