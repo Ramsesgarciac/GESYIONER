@@ -1,6 +1,7 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { EmployeeSidebar } from "@/components/employee-sidebar"
 import { EmployeesTable } from "@/components/employees-table"
 import { AddEmployeeModal } from "@/components/modalAddEmpleado"
@@ -11,11 +12,22 @@ import { useEmpleados } from "@/hooks/useEmpleados"
 import { Empleado } from "@/types/Empleado"
 
 export default function Page() {
+  const router = useRouter()
+  const [authChecked, setAuthChecked] = useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [modalOpen, setModalOpen] = useState(false)
   const [empleadoEditar, setEmpleadoEditar] = useState<Empleado | null>(null)
 
   const { empleados, loading, error, refetch, desactivar } = useEmpleados('activos')
+
+  useEffect(() => {
+    const token = localStorage.getItem('access_token')
+    if (!token) {
+      router.replace('/login')
+    } else {
+      setAuthChecked(true)
+    }
+  }, [router])
 
   const handleAgregar = () => {
     setEmpleadoEditar(null)
@@ -26,6 +38,8 @@ export default function Page() {
     setEmpleadoEditar(empleado)
     setModalOpen(true)
   }
+
+  if (!authChecked) return null
 
   return (
     <div className="flex min-h-screen bg-gray-50">
