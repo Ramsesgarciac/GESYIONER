@@ -92,7 +92,7 @@ export function AddFaltaModal({ open, onClose, id_empleado, onSuccess }: AddFalt
                         <Input
                             name="nombre"
                             required
-                            placeholder="Ej. Retardo injustificado"
+                            placeholder="Ej. Comportamiento indebido"
                             value={formData.nombre}
                             onChange={handleChange}
                         />

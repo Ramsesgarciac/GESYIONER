@@ -168,9 +168,9 @@ export function AddIncidenciaModal({ open, onClose, onSuccess, id_empleado }: Ad
                             </div>
 
                             {/* Observaciones */}
-                            <Field label="Observaciones (opcional)">
+                            <Field label="Motivo (opcional)">
                                 <textarea
-                                    placeholder="Escribe alguna observación..."
+                                    placeholder="Escribe los motivos..."
                                     value={form.observaciones}
                                     onChange={e => handleChange("observaciones", e.target.value)}
                                     rows={3}
