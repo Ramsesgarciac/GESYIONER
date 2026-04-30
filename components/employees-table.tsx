@@ -6,6 +6,7 @@ import { Pencil, Trash2, ChevronLeft, ChevronRight, Loader2, CheckCircle } from 
 import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Empleado } from "@/types/Empleado"
+import { ConfirmModal } from "@/components/modalConfirm"
 
 interface EmployeesTableProps {
    empleados: Empleado[]
@@ -22,6 +23,9 @@ const RESULTS_PER_PAGE = 7
  export function EmployeesTable({ empleados, loading, error, desactivar, activar, onEditar, soloLectura = false }: EmployeesTableProps) {
    const router = useRouter()
    const [currentPage, setCurrentPage] = useState(1)
+   const [confirmOpen, setConfirmOpen] = useState(false)
+   const [empleadoAEliminar, setEmpleadoAEliminar] = useState<number | null>(null)
+   const [deleting, setDeleting] = useState(false)
 
    const listaEmpleados = empleados ?? []
    const totalPages = Math.max(1, Math.ceil(listaEmpleados.length / RESULTS_PER_PAGE))
@@ -43,11 +47,8 @@ const RESULTS_PER_PAGE = 7
 
    const handleDelete = async (e: React.MouseEvent, id: number) => {
      e.stopPropagation()
-     try {
-       await desactivar(id)
-     } catch (err) {
-       console.error("Error al desactivar empleado:", err)
-     }
+     setEmpleadoAEliminar(id)
+     setConfirmOpen(true)
    }
 
    const handleActivate = async (e: React.MouseEvent, id: number) => {
@@ -58,6 +59,20 @@ const RESULTS_PER_PAGE = 7
        }
      } catch (err) {
        console.error("Error al activar empleado:", err)
+     }
+   }
+
+   const handleConfirmDelete = async () => {
+     if (!empleadoAEliminar) return
+     setDeleting(true)
+     try {
+       await desactivar(empleadoAEliminar)
+       setConfirmOpen(false)
+       setEmpleadoAEliminar(null)
+     } catch (err) {
+       console.error("Error al desactivar empleado:", err)
+     } finally {
+       setDeleting(false)
      }
    }
 
@@ -191,9 +206,23 @@ const RESULTS_PER_PAGE = 7
             onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
             disabled={currentPage === totalPages}>
             <ChevronRight className="w-4 h-4" />
-          </Button>
-        </div>
-      </div>
-    </div>
-  )
+           </Button>
+         </div>
+       </div>
+
+       <ConfirmModal
+         open={confirmOpen}
+         onClose={() => {
+             setConfirmOpen(false)
+             setEmpleadoAEliminar(null)
+         }}
+         onConfirm={handleConfirmDelete}
+         title="Desactivar empleado"
+         description="¿Estás seguro de que deseas desactivar este empleado? Esta acción no se puede deshacer."
+         confirmText="Desactivar"
+         cancelText="Cancelar"
+         loading={deleting}
+       />
+     </div>
+   )
 }
