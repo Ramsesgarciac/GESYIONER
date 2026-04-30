@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState } from "react"
+import { useState, useEffect } from "react"
 import { X, Loader2, AlertTriangle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -21,16 +21,28 @@ type FormData = {
     sancion: string
 }
 
+const initialFormData: FormData = {
+    nombre: "",
+    fecha: new Date().toISOString().split('T')[0],
+    motivo: "",
+    sancion: ""
+}
+
 export function AddFaltaModal({ open, onClose, id_empleado, onSuccess }: AddFaltaModalProps) {
     const [loading, setLoading] = useState(false)
-    const [formData, setFormData] = useState<FormData>({
-        nombre: "",
-        fecha: new Date().toISOString().split('T')[0],
-        motivo: "",
-        sancion: ""
-    })
+    const [formData, setFormData] = useState<FormData>(initialFormData)
 
-    if (!open) return null
+    // Resetear formulario cuando el modal se abre
+    useEffect(() => {
+        if (open) {
+            setFormData(initialFormData)
+        }
+    }, [open])
+
+    const handleClose = () => {
+        setFormData(initialFormData)
+        onClose()
+    }
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
@@ -44,7 +56,7 @@ export function AddFaltaModal({ open, onClose, id_empleado, onSuccess }: AddFalt
                 id_empleado
             })
             onSuccess()
-            onClose()
+            handleClose()
         } catch (error) {
             console.error(error)
             alert("Error al guardar la falta")
@@ -58,16 +70,18 @@ export function AddFaltaModal({ open, onClose, id_empleado, onSuccess }: AddFalt
         setFormData(prev => ({ ...prev, [name]: value }))
     }
 
+    if (!open) return null
+
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center">
-            <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
+            <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={handleClose} />
             <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-md mx-4 overflow-hidden">
                 <div className="p-6 border-b border-border flex items-center justify-between bg-gray-50">
                     <div className="flex items-center gap-2 text-amber-600">
                         <AlertTriangle className="w-5 h-5" />
                         <h2 className="text-lg font-bold">Registrar Falta</h2>
                     </div>
-                    <button onClick={onClose} className="p-1 rounded-full hover:bg-gray-200 transition-colors">
+                    <button onClick={handleClose} className="p-1 rounded-full hover:bg-gray-200 transition-colors">
                         <X className="w-5 h-5 text-muted-foreground" />
                     </button>
                 </div>
@@ -118,7 +132,7 @@ export function AddFaltaModal({ open, onClose, id_empleado, onSuccess }: AddFalt
                     </div>
 
                     <div className="pt-4 flex gap-3">
-                        <Button type="button" variant="outline" className="flex-1" onClick={onClose}>
+                        <Button type="button" variant="outline" className="flex-1" onClick={handleClose}>
                             Cancelar
                         </Button>
                         <Button type="submit" disabled={loading} className="flex-1 bg-amber-600 hover:bg-amber-700 text-white">
