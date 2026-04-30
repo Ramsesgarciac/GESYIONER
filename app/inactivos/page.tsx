@@ -10,7 +10,7 @@ import { useEmpleados } from "@/hooks/useEmpleados"
 export default function InactivosPage() {
     const [sidebarOpen, setSidebarOpen] = useState(true)
 
-    const { empleados, loading, error } = useEmpleados('inactivos')
+     const { empleados, loading, error, activar } = useEmpleados('inactivos')
 
     return (
         <div className="flex min-h-screen bg-gray-50">
@@ -34,15 +34,16 @@ export default function InactivosPage() {
                             </div>
                         </div>
 
-                        {/* Tabla sin onEditar ni desactivar — solo lectura */}
-                        <EmployeesTable
-                            empleados={empleados}
-                            loading={loading}
-                            error={error}
-                            desactivar={async () => { }}
-                            onEditar={() => { }}
-                            soloLectura
-                        />
+                         {/* Tabla sin onEditar — solo lectura con botón activar */}
+                         <EmployeesTable
+                             empleados={empleados}
+                             loading={loading}
+                             error={error}
+                             desactivar={async () => { }}
+                             onEditar={() => { }}
+                             activar={activar}
+                             soloLectura
+                         />
                     </div>
                 </main>
 

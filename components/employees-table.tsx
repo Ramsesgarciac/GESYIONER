@@ -1,53 +1,65 @@
-"use client"
+ "use client"
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { Pencil, Trash2, ChevronLeft, ChevronRight, Loader2 } from "lucide-react"
+import { Pencil, Trash2, ChevronLeft, ChevronRight, Loader2, CheckCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Empleado } from "@/types/Empleado"
 
 interface EmployeesTableProps {
-  empleados: Empleado[]
-  loading: boolean
-  error: string | null
-  desactivar: (id: number) => Promise<void>
-  onEditar: (empleado: Empleado) => void
-  soloLectura?: boolean  // ← oculta botones de acción en vista inactivos
+   empleados: Empleado[]
+   loading: boolean
+   error: string | null
+   desactivar: (id: number) => Promise<void>
+   activar?: (id: number) => Promise<void>
+   onEditar: (empleado: Empleado) => void
+   soloLectura?: boolean  // ← oculta botones de acción en vista inactivos
 }
 
 const RESULTS_PER_PAGE = 7
 
-export function EmployeesTable({ empleados, loading, error, desactivar, onEditar, soloLectura = false }: EmployeesTableProps) {
-  const router = useRouter()
-  const [currentPage, setCurrentPage] = useState(1)
+ export function EmployeesTable({ empleados, loading, error, desactivar, activar, onEditar, soloLectura = false }: EmployeesTableProps) {
+   const router = useRouter()
+   const [currentPage, setCurrentPage] = useState(1)
 
-  const listaEmpleados = empleados ?? []
-  const totalPages = Math.max(1, Math.ceil(listaEmpleados.length / RESULTS_PER_PAGE))
-  const paginated = listaEmpleados.slice(
-    (currentPage - 1) * RESULTS_PER_PAGE,
-    currentPage * RESULTS_PER_PAGE
-  )
-  const startIndex = listaEmpleados.length === 0 ? 0 : (currentPage - 1) * RESULTS_PER_PAGE + 1
-  const endIndex = Math.min(currentPage * RESULTS_PER_PAGE, listaEmpleados.length)
+   const listaEmpleados = empleados ?? []
+   const totalPages = Math.max(1, Math.ceil(listaEmpleados.length / RESULTS_PER_PAGE))
+   const paginated = listaEmpleados.slice(
+     (currentPage - 1) * RESULTS_PER_PAGE,
+     currentPage * RESULTS_PER_PAGE
+   )
+   const startIndex = listaEmpleados.length === 0 ? 0 : (currentPage - 1) * RESULTS_PER_PAGE + 1
+   const endIndex = Math.min(currentPage * RESULTS_PER_PAGE, listaEmpleados.length)
 
-  const handleRowClick = (id: number) => {
-    router.push(`/empleado/${id}`)
-  }
+   const handleRowClick = (id: number) => {
+     router.push(`/empleado/${id}`)
+   }
 
-  const handleEdit = (e: React.MouseEvent, empleado: Empleado) => {
-    e.stopPropagation()
-    onEditar(empleado)
-  }
+   const handleEdit = (e: React.MouseEvent, empleado: Empleado) => {
+     e.stopPropagation()
+     onEditar(empleado)
+   }
 
-  const handleDelete = async (e: React.MouseEvent, id: number) => {
-    e.stopPropagation()
-    try {
-      await desactivar(id)
-    } catch (err) {
-      console.error("Error al desactivar empleado:", err)
-    }
-  }
+   const handleDelete = async (e: React.MouseEvent, id: number) => {
+     e.stopPropagation()
+     try {
+       await desactivar(id)
+     } catch (err) {
+       console.error("Error al desactivar empleado:", err)
+     }
+   }
+
+   const handleActivate = async (e: React.MouseEvent, id: number) => {
+     e.stopPropagation()
+     try {
+       if (activar) {
+         await activar(id)
+       }
+     } catch (err) {
+       console.error("Error al activar empleado:", err)
+     }
+   }
 
   if (loading) {
     return (
@@ -89,11 +101,11 @@ export function EmployeesTable({ empleados, loading, error, desactivar, onEditar
               <TableHead className="text-primary-foreground font-semibold text-xs uppercase tracking-wider py-3 text-center">
                 Fecha de Ingreso
               </TableHead>
-              {!soloLectura && (
-                <TableHead className="text-primary-foreground font-semibold text-xs uppercase tracking-wider py-3 text-center">
-                  Acciones
-                </TableHead>
-              )}
+               {(!soloLectura || activar) && (
+                 <TableHead className="text-primary-foreground font-semibold text-xs uppercase tracking-wider py-3 text-center">
+                   {soloLectura ? "Acción" : "Acciones"}
+                 </TableHead>
+               )}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -112,30 +124,44 @@ export function EmployeesTable({ empleados, loading, error, desactivar, onEditar
                 <TableCell className="text-muted-foreground text-center">
                   {new Date(empleado.fecha_creacion).toLocaleDateString('es-MX')}
                 </TableCell>
-                {!soloLectura && (
-                  <TableCell className="text-center">
-                    <div className="flex justify-center gap-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="border-btn-blue text-btn-blue hover:bg-btn-blue/10 hover:text-btn-blue h-8 px-3 text-xs font-medium bg-btn-edit-bg"
-                        onClick={(e) => handleEdit(e, empleado)}
-                      >
-                        <Pencil className="w-3.5 h-3.5 mr-1.5" />
-                        Editar
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="border-destructive text-destructive hover:bg-destructive/10 hover:text-destructive h-8 px-3 text-xs font-medium bg-btn-delete-bg"
-                        onClick={(e) => handleDelete(e, empleado.id_empleado)}
-                      >
-                        <Trash2 className="w-3.5 h-3.5 mr-1.5" />
-                        Eliminar
-                      </Button>
-                    </div>
-                  </TableCell>
-                )}
+                 {soloLectura && activar ? (
+                   <TableCell className="text-center">
+                     <div className="flex justify-center">
+                       <Button
+                         size="sm"
+                         variant="outline"
+                         className="border-emerald-600 text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 h-8 px-4 text-xs font-medium"
+                         onClick={(e) => handleActivate(e, empleado.id_empleado)}
+                       >
+                         <CheckCircle className="w-3.5 h-3.5 mr-1.5" />
+                         Activar
+                       </Button>
+                     </div>
+                   </TableCell>
+                 ) : !soloLectura && (
+                   <TableCell className="text-center">
+                     <div className="flex justify-center gap-2">
+                       <Button
+                         size="sm"
+                         variant="outline"
+                         className="border-btn-blue text-btn-blue hover:bg-btn-blue/10 hover:text-btn-blue h-8 px-3 text-xs font-medium bg-btn-edit-bg"
+                         onClick={(e) => handleEdit(e, empleado)}
+                       >
+                         <Pencil className="w-3.5 h-3.5 mr-1.5" />
+                         Editar
+                       </Button>
+                       <Button
+                         size="sm"
+                         variant="outline"
+                         className="border-destructive text-destructive hover:bg-destructive/10 hover:text-destructive h-8 px-3 text-xs font-medium bg-btn-delete-bg"
+                         onClick={(e) => handleDelete(e, empleado.id_empleado)}
+                       >
+                         <Trash2 className="w-3.5 h-3.5 mr-1.5" />
+                         Eliminar
+                       </Button>
+                     </div>
+                   </TableCell>
+                 )}
               </TableRow>
             ))}
           </TableBody>

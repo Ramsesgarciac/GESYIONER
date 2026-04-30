@@ -5,16 +5,17 @@ import {
     UpdateEmpleadoDto,
     EmpleadoEstado,
 } from '../types/Empleado';
-import {
-    getEmpleados,
-    getEmpleadosActivos,
-    getEmpleadosInactivos,
-    getEmpleadoById,
-    getEmpleadosByCategoria,
-    createEmpleado,
-    updateEmpleado,
-    deactivateEmpleado,
-} from '../lib/services/Empleado.service';
+ import {
+     getEmpleados,
+     getEmpleadosActivos,
+     getEmpleadosInactivos,
+     getEmpleadoById,
+     getEmpleadosByCategoria,
+     createEmpleado,
+     updateEmpleado,
+     deactivateEmpleado,
+     activateEmpleado,
+ } from '../lib/services/Empleado.service';
 
 // ─── useEmpleados (lista con filtro activos/inactivos/todos) ───────────────────
 
@@ -61,27 +62,40 @@ export function useEmpleados(filtro: EmpleadoEstado = 'activos') {
         return actualizado;
     }, []);
 
-    // ─── Desactivar ─────────────────────────────────────────────────────────────
+     // ─── Desactivar ─────────────────────────────────────────────────────────────
 
-    const desactivar = useCallback(async (id: number): Promise<void> => {
-        await deactivateEmpleado(id);
-        // Si estamos en vista activos, lo quitamos de la lista
-        if (filtro === 'activos') {
-            setEmpleados(prev => prev.filter(e => e.id_empleado !== id));
-        } else {
-            await fetchEmpleados();
-        }
-    }, [filtro, fetchEmpleados]);
+     const desactivar = useCallback(async (id: number): Promise<void> => {
+         await deactivateEmpleado(id);
+         // Si estamos en vista activos, lo quitamos de la lista
+         if (filtro === 'activos') {
+             setEmpleados(prev => prev.filter(e => e.id_empleado !== id));
+         } else {
+             await fetchEmpleados();
+         }
+     }, [filtro, fetchEmpleados]);
 
-    return {
-        empleados,
-        loading,
-        error,
-        refetch: fetchEmpleados,
-        crear,
-        actualizar,
-        desactivar,
-    };
+     // ─── Activar ─────────────────────────────────────────────────────────────────
+
+     const activar = useCallback(async (id: number): Promise<void> => {
+         await activateEmpleado(id);
+         // Si estamos en vista inactivos, lo quitamos de la lista
+         if (filtro === 'inactivos') {
+             setEmpleados(prev => prev.filter(e => e.id_empleado !== id));
+         } else {
+             await fetchEmpleados();
+         }
+     }, [filtro, fetchEmpleados]);
+
+     return {
+         empleados,
+         loading,
+         error,
+         refetch: fetchEmpleados,
+         crear,
+         actualizar,
+         desactivar,
+         activar,
+     };
 }
 
 // ─── useEmpleado (uno por ID) ──────────────────────────────────────────────────

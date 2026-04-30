@@ -76,12 +76,22 @@ export async function updateEmpleado(id: number, data: UpdateEmpleadoDto): Promi
     return res.json();
 }
 
-// ─── PATCH desactivar ──────────────────────────────────────────────────────────
+ // ─── PATCH desactivar ──────────────────────────────────────────────────────────
 
-export async function deactivateEmpleado(id: number): Promise<Empleado> {
-    const res = await fetch(`${BASE_URL}/${id}/desactivar`, {
-        method: 'PATCH',
-    });
-    if (!res.ok) throw new Error(`Error al desactivar empleado con ID ${id}`);
-    return res.json();
-}
+ export async function deactivateEmpleado(id: number): Promise<Empleado> {
+     const res = await fetch(`${BASE_URL}/${id}/desactivar`, {
+         method: 'PATCH',
+     });
+     if (!res.ok) throw new Error(`Error al desactivar empleado con ID ${id}`);
+     return res.json();
+ }
+
+ // ─── PATCH activar ──────────────────────────────────────────────────────────────
+
+ export async function activateEmpleado(id: number): Promise<Empleado> {
+     const res = await fetch(`${BASE_URL}/${id}/activar`, {
+         method: 'PATCH',
+     });
+     if (!res.ok) throw new Error(`Error al activar empleado con ID ${id}`);
+     return res.json();
+ }
