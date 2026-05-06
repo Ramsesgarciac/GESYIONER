@@ -43,8 +43,15 @@ export function useIncidencias() {
 
     const actualizar = useCallback(async (id: number, dto: UpdateIncidenciaDto): Promise<Incidencia> => {
         const actualizada = await updateIncidencia(id, dto);
-        setIncidencias(prev => prev.map(i => i.id_incidencia === id ? actualizada : i));
-        return actualizada;
+        setIncidencias(prev => prev.map(i => i.id_incidencia === id ? {
+            ...i,
+            ...actualizada,
+            ...dto,
+            tipoIncidencia: dto.id_tipo_incidencia && dto.id_tipo_incidencia !== i.id_tipo_incidencia
+                ? undefined
+                : actualizada.tipoIncidencia ?? i.tipoIncidencia,
+        } : i));
+        return { ...actualizada, ...dto };
     }, []);
 
     // ─── Eliminar ───────────────────────────────────────────────────────────────
@@ -100,8 +107,15 @@ export function useIncidenciasByEmpleado(id_empleado: number | null) {
 
     const actualizar = useCallback(async (id: number, dto: UpdateIncidenciaDto): Promise<Incidencia> => {
         const actualizada = await updateIncidencia(id, dto);
-        setIncidencias(prev => prev.map(i => i.id_incidencia === id ? actualizada : i));
-        return actualizada;
+        setIncidencias(prev => prev.map(i => i.id_incidencia === id ? {
+            ...i,
+            ...actualizada,
+            ...dto,
+            tipoIncidencia: dto.id_tipo_incidencia && dto.id_tipo_incidencia !== i.id_tipo_incidencia
+                ? undefined
+                : actualizada.tipoIncidencia ?? i.tipoIncidencia,
+        } : i));
+        return { ...actualizada, ...dto };
     }, []);
 
     // ─── Eliminar ───────────────────────────────────────────────────────────────

@@ -17,17 +17,17 @@ import { useIncidenciasByEmpleado } from "@/hooks/useIncidencias"
 import { useEventosByEmpleado } from "@/hooks/useEventos"
 import { useHojaVida } from "@/hooks/useHojaVida"
 import { useContratosByEmpleado } from "@/hooks/useConratos"
- import { downloadDocumento } from "@/lib/services/Document.service"
- import { downloadContrato } from "@/lib/services/Contrato.service"
- import { AddIncidenciaModal } from "@/components/modalAddIncidencia"
- import { AddEventoModal } from "@/components/modalAddEvento"
- import { UpdateDocModal, HistorialDocModal, PreviewDocModal } from "@/components/modalDocuments"
- import { AddContratoModal } from "@/components/modalAddContrato"
- import { IncidenciasTabla } from "@/components/tableIncidencias"
- import { FaltasAdministrativasTabla } from "@/components/tableFaltasAdministrativas"
- import { AddFaltaModal } from "@/components/modalAddFalta"
- import { useFaltasByEmpleado } from "@/hooks/useFaltasAdministrativas"
- import { Contrato } from "@/types/Contrato"
+import { downloadDocumento } from "@/lib/services/Document.service"
+import { downloadContrato } from "@/lib/services/Contrato.service"
+import { AddIncidenciaModal } from "@/components/modalAddIncidencia"
+import { AddEventoModal } from "@/components/modalAddEvento"
+import { UpdateDocModal, HistorialDocModal, PreviewDocModal } from "@/components/modalDocuments"
+import { AddContratoModal } from "@/components/modalAddContrato"
+import { IncidenciasTabla } from "@/components/tableIncidencias"
+import { FaltasAdministrativasTabla } from "@/components/tableFaltasAdministrativas"
+import { AddFaltaModal } from "@/components/modalAddFalta"
+import { useFaltasByEmpleado } from "@/hooks/useFaltasAdministrativas"
+import { Contrato } from "@/types/Contrato"
 
 function formatFecha(fecha: string): string {
   if (!fecha) return "—"
@@ -35,14 +35,14 @@ function formatFecha(fecha: string): string {
   return `${day}/${month}/${year}`
 }
 
- type TabType = "informacion" | "incidencias" | "hoja-de-vida"
- type IncidenciaSubTab = "incidencias" | "faltas"
+type TabType = "informacion" | "incidencias" | "hoja-de-vida"
+type IncidenciaSubTab = "incidencias" | "faltas"
 
- const tabs: { id: TabType; label: string }[] = [
-   { id: "informacion", label: "Información" },
-   { id: "incidencias", label: "Incidencias" },
-   { id: "hoja-de-vida", label: "Hoja de vida" },
- ]
+const tabs: { id: TabType; label: string }[] = [
+  { id: "informacion", label: "Información" },
+  { id: "incidencias", label: "Incidencias" },
+  { id: "hoja-de-vida", label: "Hoja de vida" },
+]
 
 
 function InfoRow({ icon: Icon, label, value }: { icon: any; label: string; value: string }) {
@@ -195,31 +195,31 @@ function PreviewContratoModal({ open, onClose, id_contrato, nombre_archivo, zInd
 
 // ─── Page principal ───────────────────────────────────────────────────────────
 
-  export default function EmpleadoPage() {
-    const params = useParams()
-    const [sidebarOpen, setSidebarOpen] = useState(true)
-    const [activeTab, setActiveTab] = useState<TabType>("informacion")
-    const [activeIncidenciaTab, setActiveIncidenciaTab] = useState<IncidenciaSubTab>("incidencias")
-    const [incidenciaModalOpen, setIncidenciaModalOpen] = useState(false)
-    const [faltaModalOpen, setFaltaModalOpen] = useState(false)
-    const [eventoModalOpen, setEventoModalOpen] = useState(false)
-    const [contratoModalOpen, setContratoModalOpen] = useState(false)
-    const [historialContratosOpen, setHistorialContratosOpen] = useState(false)
+export default function EmpleadoPage() {
+  const params = useParams()
+  const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [activeTab, setActiveTab] = useState<TabType>("informacion")
+  const [activeIncidenciaTab, setActiveIncidenciaTab] = useState<IncidenciaSubTab>("incidencias")
+  const [incidenciaModalOpen, setIncidenciaModalOpen] = useState(false)
+  const [faltaModalOpen, setFaltaModalOpen] = useState(false)
+  const [eventoModalOpen, setEventoModalOpen] = useState(false)
+  const [contratoModalOpen, setContratoModalOpen] = useState(false)
+  const [historialContratosOpen, setHistorialContratosOpen] = useState(false)
 
-    const [updateDoc, setUpdateDoc] = useState<{ id_tipo_doc: number; nombre_doc: string } | null>(null)
-    const [historialDoc, setHistorialDoc] = useState<{ id_tipo_doc: number; nombre_doc: string } | null>(null)
-    const [previewDoc, setPreviewDoc] = useState<{ id_doc_empleado: number; nombre_archivo: string } | null>(null)
-    const [previewContrato, setPreviewContrato] = useState<{ id: number; nombre_archivo: string } | null>(null)
+  const [updateDoc, setUpdateDoc] = useState<{ id_tipo_doc: number; nombre_doc: string } | null>(null)
+  const [historialDoc, setHistorialDoc] = useState<{ id_tipo_doc: number; nombre_doc: string } | null>(null)
+  const [previewDoc, setPreviewDoc] = useState<{ id_doc_empleado: number; nombre_archivo: string } | null>(null)
+  const [previewContrato, setPreviewContrato] = useState<{ id: number; nombre_archivo: string } | null>(null)
 
-    const empleadoId = Number(params.id)
+  const empleadoId = Number(params.id)
 
-    const { empleado, loading: loadingEmpleado } = useEmpleado(empleadoId)
-    const { listado, loading: loadingDocs, refetch: refetchDocs } = useListadoDocumentos(empleadoId)
-    const { incidencias, loading: loadingIncidencias, refetch: refetchIncidencias } = useIncidenciasByEmpleado(empleadoId)
-    const { eventos, loading: loadingEventos, refetch: refetchEventos } = useEventosByEmpleado(empleadoId)
-    const { descargarPdf, loading: loadingPdf } = useHojaVida(empleadoId)
-    const { contratoVigente, loading: loadingContrato, refetch: refetchContratos } = useContratosByEmpleado(empleadoId)
-    const { faltas, loading: loadingFaltas, refetch: refetchFaltas } = useFaltasByEmpleado(empleadoId)
+  const { empleado, loading: loadingEmpleado } = useEmpleado(empleadoId)
+  const { listado, loading: loadingDocs, refetch: refetchDocs } = useListadoDocumentos(empleadoId)
+  const { incidencias, loading: loadingIncidencias, refetch: refetchIncidencias, actualizar: actualizarIncidencia } = useIncidenciasByEmpleado(empleadoId)
+  const { eventos, loading: loadingEventos, refetch: refetchEventos } = useEventosByEmpleado(empleadoId)
+  const { descargarPdf, loading: loadingPdf } = useHojaVida(empleadoId)
+  const { contratoVigente, loading: loadingContrato, refetch: refetchContratos } = useContratosByEmpleado(empleadoId)
+  const { faltas, loading: loadingFaltas, refetch: refetchFaltas } = useFaltasByEmpleado(empleadoId)
 
   // ─── Derivado: es inactivo ─────────────────────────────────────────────────
   const esInactivo = empleado?.activo === false
@@ -440,49 +440,56 @@ function PreviewContratoModal({ open, onClose, id_contrato, nombre_archivo, zInd
             </div>
           )}
 
-           {/* ─── Tab: Incidencias ─────────────────────────────────────── */}
-           {activeTab === "incidencias" && (
-             <div className="space-y-5">
-               <div className="flex items-start gap-4">
-                 <div className="flex-1"><EmployeeHeader compact /></div>
-                 {/* Botones agregar incidencia y falta administrativa solo si activo */}
-                 {!esInactivo && (
-                   <div className="flex flex-col gap-2 shrink-0">
-                     <Button className="bg-btn-blue hover:bg-btn-blue-hover text-white" onClick={() => setIncidenciaModalOpen(true)}>
-                       <Plus className="w-4 h-4 mr-2" />Agregar Incidencia
-                     </Button>
-                     <Button className="bg-btn-blue hover:bg-btn-blue-hover text-white" onClick={() => setFaltaModalOpen(true)}>
-                       <Plus className="w-4 h-4 mr-2" />Agregar Falta Administrativa
-                     </Button>
-                   </div>
-                 )}
-               </div>
+          {/* ─── Tab: Incidencias ─────────────────────────────────────── */}
+          {activeTab === "incidencias" && (
+            <div className="space-y-5">
+              <div className="flex items-start gap-4">
+                <div className="flex-1"><EmployeeHeader compact /></div>
+                {/* Botones agregar incidencia y falta administrativa solo si activo */}
+                {!esInactivo && (
+                  <div className="flex flex-col gap-2 shrink-0">
+                    <Button className="bg-btn-blue hover:bg-btn-blue-hover text-white" onClick={() => setIncidenciaModalOpen(true)}>
+                      <Plus className="w-4 h-4 mr-2" />Agregar Incidencia
+                    </Button>
+                    <Button className="bg-btn-blue hover:bg-btn-blue-hover text-white" onClick={() => setFaltaModalOpen(true)}>
+                      <Plus className="w-4 h-4 mr-2" />Agregar Falta Administrativa
+                    </Button>
+                  </div>
+                )}
+              </div>
 
-               {/* Sub-tabs para alternar entre Incidencias y Faltas Administrativas */}
-               <div className="flex gap-1 bg-white border border-border rounded-xl p-1 shadow-sm">
-                 <button
-                   onClick={() => setActiveIncidenciaTab("incidencias")}
-                   className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all duration-200 ${activeIncidenciaTab === "incidencias" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground hover:bg-muted/50"}`}
-                 >
-                   Incidencias
-                 </button>
-                 <button
-                   onClick={() => setActiveIncidenciaTab("faltas")}
-                   className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all duration-200 ${activeIncidenciaTab === "faltas" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground hover:bg-muted/50"}`}
-                 >
-                   Faltas Administrativas
-                 </button>
-               </div>
+              {/* Sub-tabs para alternar entre Incidencias y Faltas Administrativas */}
+              <div className="flex gap-1 bg-white border border-border rounded-xl p-1 shadow-sm">
+                <button
+                  onClick={() => setActiveIncidenciaTab("incidencias")}
+                  className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all duration-200 ${activeIncidenciaTab === "incidencias" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground hover:bg-muted/50"}`}
+                >
+                  Incidencias
+                </button>
+                <button
+                  onClick={() => setActiveIncidenciaTab("faltas")}
+                  className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all duration-200 ${activeIncidenciaTab === "faltas" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground hover:bg-muted/50"}`}
+                >
+                  Faltas Administrativas
+                </button>
+              </div>
 
-               {/* Contenido de las sub-tabs */}
-               {activeIncidenciaTab === "incidencias" && (
-                 <IncidenciasTabla incidencias={incidencias} loading={loadingIncidencias} />
-               )}
-               {activeIncidenciaTab === "faltas" && (
-                 <FaltasAdministrativasTabla faltas={faltas} loading={loadingFaltas} onRefetch={refetchFaltas} />
-               )}
-             </div>
-           )}
+              {/* Contenido de las sub-tabs */}
+              {activeIncidenciaTab === "incidencias" && (
+                <IncidenciasTabla
+                  incidencias={incidencias}
+                  loading={loadingIncidencias}
+                  canEdit={!esInactivo}
+                  onUpdate={async (id, dto) => {
+                    return actualizarIncidencia(id, dto)
+                  }}
+                />
+              )}
+              {activeIncidenciaTab === "faltas" && (
+                <FaltasAdministrativasTabla faltas={faltas} loading={loadingFaltas} onRefetch={refetchFaltas} />
+              )}
+            </div>
+          )}
 
           {/* ─── Tab: Hoja de vida ────────────────────────────────────── */}
           {activeTab === "hoja-de-vida" && (
@@ -541,25 +548,25 @@ function PreviewContratoModal({ open, onClose, id_contrato, nombre_archivo, zInd
         </footer>
       </div>
 
-       {/* Modales — solo se montan si activo */}
-       {!esInactivo && (
-         <>
-           <AddIncidenciaModal open={incidenciaModalOpen} onClose={() => setIncidenciaModalOpen(false)} onSuccess={() => { setIncidenciaModalOpen(false); refetchIncidencias() }} id_empleado={empleadoId} />
-           <AddFaltaModal open={faltaModalOpen} onClose={() => setFaltaModalOpen(false)} onSuccess={() => { setFaltaModalOpen(false); refetchFaltas() }} id_empleado={empleadoId} />
-           <AddEventoModal
-             key={`evento-modal-${empleado?.puesto ?? ''}-${empleado?.salario_actual ?? ''}`}
-             open={eventoModalOpen}
-             onClose={() => setEventoModalOpen(false)}
-             onSuccess={() => { setEventoModalOpen(false); refetchEventos() }}
-             id_empleado={empleadoId}
-             cargoActual={empleado?.puesto ?? ""}
-             salarioActual={empleado?.salario_actual ? Number(empleado.salario_actual) : undefined}
-           />
-           <AddContratoModal open={contratoModalOpen} onClose={() => setContratoModalOpen(false)} onSuccess={() => { setContratoModalOpen(false); refetchContratos() }} id_empleado={empleadoId} contratoVigenteId={contratoVigente?.id_contrato} />
-           <UpdateDocModal open={!!updateDoc} onClose={() => setUpdateDoc(null)} onSuccess={() => { setUpdateDoc(null); refetchDocs() }} id_empleado={empleadoId} id_tipo_doc={updateDoc?.id_tipo_doc ?? 0} nombre_doc={updateDoc?.nombre_doc ?? ""} />
-           <HistorialDocModal open={!!historialDoc} onClose={() => setHistorialDoc(null)} id_empleado={empleadoId} id_tipo_doc={historialDoc?.id_tipo_doc ?? 0} nombre_doc={historialDoc?.nombre_doc ?? ""} />
-         </>
-       )}
+      {/* Modales — solo se montan si activo */}
+      {!esInactivo && (
+        <>
+          <AddIncidenciaModal open={incidenciaModalOpen} onClose={() => setIncidenciaModalOpen(false)} onSuccess={() => { setIncidenciaModalOpen(false); refetchIncidencias() }} id_empleado={empleadoId} />
+          <AddFaltaModal open={faltaModalOpen} onClose={() => setFaltaModalOpen(false)} onSuccess={() => { setFaltaModalOpen(false); refetchFaltas() }} id_empleado={empleadoId} />
+          <AddEventoModal
+            key={`evento-modal-${empleado?.puesto ?? ''}-${empleado?.salario_actual ?? ''}`}
+            open={eventoModalOpen}
+            onClose={() => setEventoModalOpen(false)}
+            onSuccess={() => { setEventoModalOpen(false); refetchEventos() }}
+            id_empleado={empleadoId}
+            cargoActual={empleado?.puesto ?? ""}
+            salarioActual={empleado?.salario_actual ? Number(empleado.salario_actual) : undefined}
+          />
+          <AddContratoModal open={contratoModalOpen} onClose={() => setContratoModalOpen(false)} onSuccess={() => { setContratoModalOpen(false); refetchContratos() }} id_empleado={empleadoId} contratoVigenteId={contratoVigente?.id_contrato} />
+          <UpdateDocModal open={!!updateDoc} onClose={() => setUpdateDoc(null)} onSuccess={() => { setUpdateDoc(null); refetchDocs() }} id_empleado={empleadoId} id_tipo_doc={updateDoc?.id_tipo_doc ?? 0} nombre_doc={updateDoc?.nombre_doc ?? ""} />
+          <HistorialDocModal open={!!historialDoc} onClose={() => setHistorialDoc(null)} id_empleado={empleadoId} id_tipo_doc={historialDoc?.id_tipo_doc ?? 0} nombre_doc={historialDoc?.nombre_doc ?? ""} />
+        </>
+      )}
       <PreviewDocModal open={!!previewDoc} onClose={() => setPreviewDoc(null)} id_doc_empleado={previewDoc?.id_doc_empleado ?? 0} nombre_archivo={previewDoc?.nombre_archivo ?? ""} />
       <HistorialContratosModal open={historialContratosOpen} onClose={() => setHistorialContratosOpen(false)} id_empleado={empleadoId} />
       {previewContrato && <PreviewContratoModal open={!!previewContrato} onClose={() => setPreviewContrato(null)} id_contrato={previewContrato.id} nombre_archivo={previewContrato.nombre_archivo} />}
