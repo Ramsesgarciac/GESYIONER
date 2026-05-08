@@ -27,6 +27,8 @@ import { IncidenciasTabla } from "@/components/tableIncidencias"
 import { FaltasAdministrativasTabla } from "@/components/tableFaltasAdministrativas"
 import { AddFaltaModal } from "@/components/modalAddFalta"
 import { useFaltasByEmpleado } from "@/hooks/useFaltasAdministrativas"
+import { UpdateContratoModal } from "@/components/modalUpdateContrato"
+import { ReplaceContratoModal } from "@/components/modalReplaceContrato"
 import { Contrato } from "@/types/Contrato"
 
 function formatFecha(fecha: string): string {
@@ -206,6 +208,13 @@ export default function EmpleadoPage() {
   const [contratoModalOpen, setContratoModalOpen] = useState(false)
   const [historialContratosOpen, setHistorialContratosOpen] = useState(false)
 
+  const [updateContrato, setUpdateContrato] = useState<Contrato | null>(null)
+
+  const [replaceContrato, setReplaceContrato] = useState<{
+    id: number
+    nombre_archivo: string
+  } | null>(null)
+
   const [updateDoc, setUpdateDoc] = useState<{ id_tipo_doc: number; nombre_doc: string } | null>(null)
   const [replaceDoc, setReplaceDoc] = useState<{ id_doc_empleado: number; nombre_doc: string; nombre_archivo: string } | null>(null)
   const [historialDoc, setHistorialDoc] = useState<{ id_tipo_doc: number; nombre_doc: string } | null>(null)
@@ -219,7 +228,13 @@ export default function EmpleadoPage() {
   const { incidencias, loading: loadingIncidencias, refetch: refetchIncidencias, actualizar: actualizarIncidencia } = useIncidenciasByEmpleado(empleadoId)
   const { eventos, loading: loadingEventos, refetch: refetchEventos } = useEventosByEmpleado(empleadoId)
   const { descargarPdf, loading: loadingPdf } = useHojaVida(empleadoId)
-  const { contratoVigente, loading: loadingContrato, refetch: refetchContratos } = useContratosByEmpleado(empleadoId)
+  const {
+    contratoVigente,
+    loading: loadingContrato,
+    refetch: refetchContratos,
+    actualizar,
+    reemplazarArchivo,
+  } = useContratosByEmpleado(empleadoId)
   const { faltas, loading: loadingFaltas, refetch: refetchFaltas } = useFaltasByEmpleado(empleadoId)
 
   // ─── Derivado: es inactivo ─────────────────────────────────────────────────
@@ -433,6 +448,26 @@ export default function EmpleadoPage() {
                             <span className="flex items-center gap-1"><CalendarDays className="w-3 h-3" />{formatFecha(contratoVigente.fecha_inicio)} — {formatFecha(contratoVigente.fecha_fin)}</span>
                           </div>
                           <div className="flex items-center gap-1.5">
+                            <button
+                              onClick={() => setUpdateContrato(contratoVigente)}
+                              className="flex items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground font-medium bg-muted hover:bg-muted/80 px-2.5 py-1.5 rounded-lg transition-colors"
+                            >
+                              <Pencil className="w-3 h-3" />
+                              Editar
+                            </button>
+
+                            <button
+                              onClick={() =>
+                                setReplaceContrato({
+                                  id: contratoVigente.id_contrato,
+                                  nombre_archivo: contratoVigente.nombre_archivo,
+                                })
+                              }
+                              className="flex items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground font-medium bg-muted hover:bg-muted/80 px-2.5 py-1.5 rounded-lg transition-colors"
+                            >
+                              <Upload className="w-3 h-3" />
+                              Reemplazar PDF
+                            </button>
                             <button onClick={() => setPreviewContrato({ id: contratoVigente.id_contrato, nombre_archivo: contratoVigente.nombre_archivo })}
                               className="flex items-center gap-1 text-[11px] text-primary font-medium bg-primary/8 hover:bg-primary/15 px-2.5 py-1.5 rounded-lg transition-colors"><Eye className="w-3 h-3" />Ver</button>
                             <button onClick={() => downloadContrato(contratoVigente.id_contrato, contratoVigente.nombre_archivo)}
@@ -592,6 +627,28 @@ export default function EmpleadoPage() {
       <PreviewDocModal open={!!previewDoc} onClose={() => setPreviewDoc(null)} id_doc_empleado={previewDoc?.id_doc_empleado ?? 0} nombre_archivo={previewDoc?.nombre_archivo ?? ""} />
       <HistorialContratosModal open={historialContratosOpen} onClose={() => setHistorialContratosOpen(false)} id_empleado={empleadoId} />
       {previewContrato && <PreviewContratoModal open={!!previewContrato} onClose={() => setPreviewContrato(null)} id_contrato={previewContrato.id} nombre_archivo={previewContrato.nombre_archivo} />}
+      <UpdateContratoModal
+        open={!!updateContrato}
+        onClose={() => setUpdateContrato(null)}
+        contrato={updateContrato}
+        onUpdate={actualizar}
+        onSuccess={() => {
+          setUpdateContrato(null)
+          refetchContratos()
+        }}
+      />
+
+      <ReplaceContratoModal
+        open={!!replaceContrato}
+        onClose={() => setReplaceContrato(null)}
+        id_contrato={replaceContrato?.id ?? 0}
+        nombre_archivo={replaceContrato?.nombre_archivo ?? ""}
+        onReplace={reemplazarArchivo}
+        onSuccess={() => {
+          setReplaceContrato(null)
+          refetchContratos()
+        }}
+      />
     </div>
   )
 }

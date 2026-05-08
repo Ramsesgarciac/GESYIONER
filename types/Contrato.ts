@@ -25,5 +25,5 @@ export interface UploadContratoDto {
 export interface UpdateContratoDto {
     fecha_inicio?: string;
     fecha_fin?: string;
-    id_tipo_contrato?: number;
+    vigente?: boolean;
 }
