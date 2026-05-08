@@ -28,6 +28,25 @@ export async function uploadDocumento(dto: UploadDocumentoDto): Promise<DocEmple
     return res.json();
 }
 
+// ─── PATCH replace archivo actual ─────────────────────────────────────────────
+
+export async function replaceDocumento(id: number, file: File): Promise<DocEmpleado> {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const res = await fetch(`${BASE_URL}/${id}/replace`, {
+        method: 'PATCH',
+        body: formData,
+    });
+
+    if (!res.ok) {
+        const error = await res.json().catch(() => ({}));
+        throw new Error(error.message ?? 'Error al reemplazar documento');
+    }
+
+    return res.json();
+}
+
 // ─── GET listado completo del empleado ────────────────────────────────────────
 
 export async function getListadoDocumentos(id_empleado: number): Promise<ListadoDocumentosResponse> {

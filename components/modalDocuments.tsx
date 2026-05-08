@@ -100,6 +100,102 @@ export function UpdateDocModal({ open, onClose, onSuccess, id_empleado, id_tipo_
 // Modal: Historial de versiones
 // ─────────────────────────────────────────────────────────────────────────────
 
+interface ReplaceDocModalProps {
+    open: boolean
+    onClose: () => void
+    onSuccess: () => void
+    onReplace: (id_doc_empleado: number, file: File) => Promise<unknown>
+    id_doc_empleado: number
+    nombre_doc: string
+    nombre_archivo: string
+}
+
+export function ReplaceDocModal({
+    open,
+    onClose,
+    onSuccess,
+    onReplace,
+    id_doc_empleado,
+    nombre_doc,
+    nombre_archivo,
+}: ReplaceDocModalProps) {
+    const [file, setFile] = useState<File | null>(null)
+    const [uploading, setUploading] = useState(false)
+    const [error, setError] = useState<string | null>(null)
+    const fileRef = useRef<HTMLInputElement>(null)
+
+    if (!open) return null
+
+    const handleReplace = async () => {
+        if (!file) return
+        setUploading(true)
+        setError(null)
+        try {
+            await onReplace(id_doc_empleado, file)
+            onSuccess()
+            handleClose()
+        } catch (err) {
+            setError(err instanceof Error ? err.message : "Error al reemplazar documento")
+        } finally {
+            setUploading(false)
+        }
+    }
+
+    const handleClose = () => {
+        setFile(null)
+        setError(null)
+        onClose()
+    }
+
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+            <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={handleClose} />
+            <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm mx-4">
+                <div className="px-6 pt-6 pb-4 border-b border-border">
+                    <button onClick={handleClose} className="absolute top-4 right-4 p-1.5 rounded-full hover:bg-gray-100 text-gray-400 transition-colors">
+                        <X className="w-4 h-4" />
+                    </button>
+                    <h2 className="text-base font-semibold text-foreground">Editar documento</h2>
+                    <p className="text-xs text-muted-foreground mt-0.5 truncate">{nombre_doc}</p>
+                </div>
+
+                <div className="px-6 py-5 space-y-4">
+                    {error && <div className="bg-destructive/10 text-destructive text-sm px-3 py-2 rounded-lg">{error}</div>}
+
+                    <div className="rounded-lg border border-border bg-muted/30 px-3 py-2">
+                        <p className="text-[11px] text-muted-foreground">Archivo actual</p>
+                        <p className="text-xs font-medium text-foreground truncate mt-0.5">{nombre_archivo}</p>
+                    </div>
+
+                    <div
+                        onClick={() => fileRef.current?.click()}
+                        className="border-2 border-dashed border-border rounded-xl p-6 text-center cursor-pointer hover:border-primary/50 hover:bg-muted/20 transition-all"
+                    >
+                        <Upload className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
+                        {file ? (
+                            <p className="text-sm font-medium text-foreground truncate px-4">{file.name}</p>
+                        ) : (
+                            <>
+                                <p className="text-sm text-muted-foreground">Selecciona el nuevo archivo</p>
+                                <p className="text-[11px] text-muted-foreground/60 mt-1">PDF, JPG o PNG - max 10MB</p>
+                            </>
+                        )}
+                    </div>
+                    <input ref={fileRef} type="file" accept=".pdf,.jpg,.jpeg,.png" className="hidden"
+                        onChange={e => setFile(e.target.files?.[0] ?? null)} />
+                </div>
+
+                <div className="px-6 pb-6 flex gap-3">
+                    <Button variant="outline" className="flex-1" onClick={handleClose} disabled={uploading}>Cancelar</Button>
+                    <Button className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground" onClick={handleReplace} disabled={!file || uploading}>
+                        {uploading ? <><Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />Guardando...</> : "Guardar"}
+                    </Button>
+                </div>
+            </div>
+        </div>
+    )
+}
+
 interface HistorialDocModalProps {
     open: boolean
     onClose: () => void

@@ -13,6 +13,7 @@ import {
     getHistorialDocumento,
     downloadDocumento,
     activarVersion,
+    replaceDocumento,
 } from '../lib/services/Document.service';
 
 // ─── useListadoDocumentos ─────────────────────────────────────────────────────
@@ -55,6 +56,17 @@ export function useListadoDocumentos(id_empleado: number | null) {
         }
     }, [fetchListado]);
 
+    const reemplazar = useCallback(async (id_doc_empleado: number, file: File): Promise<DocEmpleado> => {
+        setUploading(true);
+        try {
+            const actualizado = await replaceDocumento(id_doc_empleado, file);
+            await fetchListado();
+            return actualizado;
+        } finally {
+            setUploading(false);
+        }
+    }, [fetchListado]);
+
     // ─── Descargar documento ────────────────────────────────────────────────────
 
     const descargar = useCallback(async (id: number): Promise<void> => {
@@ -68,6 +80,7 @@ export function useListadoDocumentos(id_empleado: number | null) {
         uploading,
         refetch: fetchListado,
         subir,
+        reemplazar,
         descargar,
     };
 }

@@ -7,7 +7,7 @@ import {
   FileText, Plus, Download, Loader2,
   Hash, Briefcase, MapPin, Tag,
   CreditCard, IdCard, AlertCircle, TrendingUp,
-  Upload, Clock, Eye, ScrollText, CalendarDays, CheckCircle2, X
+  Upload, Clock, Eye, ScrollText, CalendarDays, CheckCircle2, X, Pencil
 } from "lucide-react"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
@@ -21,7 +21,7 @@ import { downloadDocumento } from "@/lib/services/Document.service"
 import { downloadContrato } from "@/lib/services/Contrato.service"
 import { AddIncidenciaModal } from "@/components/modalAddIncidencia"
 import { AddEventoModal } from "@/components/modalAddEvento"
-import { UpdateDocModal, HistorialDocModal, PreviewDocModal } from "@/components/modalDocuments"
+import { UpdateDocModal, HistorialDocModal, PreviewDocModal, ReplaceDocModal } from "@/components/modalDocuments"
 import { AddContratoModal } from "@/components/modalAddContrato"
 import { IncidenciasTabla } from "@/components/tableIncidencias"
 import { FaltasAdministrativasTabla } from "@/components/tableFaltasAdministrativas"
@@ -207,6 +207,7 @@ export default function EmpleadoPage() {
   const [historialContratosOpen, setHistorialContratosOpen] = useState(false)
 
   const [updateDoc, setUpdateDoc] = useState<{ id_tipo_doc: number; nombre_doc: string } | null>(null)
+  const [replaceDoc, setReplaceDoc] = useState<{ id_doc_empleado: number; nombre_doc: string; nombre_archivo: string } | null>(null)
   const [historialDoc, setHistorialDoc] = useState<{ id_tipo_doc: number; nombre_doc: string } | null>(null)
   const [previewDoc, setPreviewDoc] = useState<{ id_doc_empleado: number; nombre_archivo: string } | null>(null)
   const [previewContrato, setPreviewContrato] = useState<{ id: number; nombre_archivo: string } | null>(null)
@@ -214,7 +215,7 @@ export default function EmpleadoPage() {
   const empleadoId = Number(params.id)
 
   const { empleado, loading: loadingEmpleado } = useEmpleado(empleadoId)
-  const { listado, loading: loadingDocs, refetch: refetchDocs } = useListadoDocumentos(empleadoId)
+  const { listado, loading: loadingDocs, refetch: refetchDocs, reemplazar: reemplazarDocumento } = useListadoDocumentos(empleadoId)
   const { incidencias, loading: loadingIncidencias, refetch: refetchIncidencias, actualizar: actualizarIncidencia } = useIncidenciasByEmpleado(empleadoId)
   const { eventos, loading: loadingEventos, refetch: refetchEventos } = useEventosByEmpleado(empleadoId)
   const { descargarPdf, loading: loadingPdf } = useHojaVida(empleadoId)
@@ -371,10 +372,22 @@ export default function EmpleadoPage() {
                                   <Upload className="w-3 h-3" />{doc.subido ? "Actualizar" : "Subir"}
                                 </button>
                                 {doc.subido && (
-                                  <button onClick={() => setHistorialDoc({ id_tipo_doc: doc.id_tipo_doc, nombre_doc: doc.nombre_doc })}
-                                    className="flex items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground font-medium bg-muted hover:bg-muted/80 px-2.5 py-1.5 rounded-lg transition-colors">
-                                    <Clock className="w-3 h-3" />Historial
-                                  </button>
+                                  <>
+                                    <button
+                                      onClick={() => setReplaceDoc({
+                                        id_doc_empleado: doc.documento!.id_doc_empleado,
+                                        nombre_doc: doc.nombre_doc,
+                                        nombre_archivo: doc.documento!.nombre_archivo,
+                                      })}
+                                      className="flex items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground font-medium bg-muted hover:bg-muted/80 px-2.5 py-1.5 rounded-lg transition-colors"
+                                    >
+                                      <Pencil className="w-3 h-3" />Editar
+                                    </button>
+                                    <button onClick={() => setHistorialDoc({ id_tipo_doc: doc.id_tipo_doc, nombre_doc: doc.nombre_doc })}
+                                      className="flex items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground font-medium bg-muted hover:bg-muted/80 px-2.5 py-1.5 rounded-lg transition-colors">
+                                      <Clock className="w-3 h-3" />Historial
+                                    </button>
+                                  </>
                                 )}
                               </>
                             )}
@@ -564,6 +577,15 @@ export default function EmpleadoPage() {
           />
           <AddContratoModal open={contratoModalOpen} onClose={() => setContratoModalOpen(false)} onSuccess={() => { setContratoModalOpen(false); refetchContratos() }} id_empleado={empleadoId} contratoVigenteId={contratoVigente?.id_contrato} />
           <UpdateDocModal open={!!updateDoc} onClose={() => setUpdateDoc(null)} onSuccess={() => { setUpdateDoc(null); refetchDocs() }} id_empleado={empleadoId} id_tipo_doc={updateDoc?.id_tipo_doc ?? 0} nombre_doc={updateDoc?.nombre_doc ?? ""} />
+          <ReplaceDocModal
+            open={!!replaceDoc}
+            onClose={() => setReplaceDoc(null)}
+            onSuccess={() => setReplaceDoc(null)}
+            onReplace={reemplazarDocumento}
+            id_doc_empleado={replaceDoc?.id_doc_empleado ?? 0}
+            nombre_doc={replaceDoc?.nombre_doc ?? ""}
+            nombre_archivo={replaceDoc?.nombre_archivo ?? ""}
+          />
           <HistorialDocModal open={!!historialDoc} onClose={() => setHistorialDoc(null)} id_empleado={empleadoId} id_tipo_doc={historialDoc?.id_tipo_doc ?? 0} nombre_doc={historialDoc?.nombre_doc ?? ""} />
         </>
       )}
