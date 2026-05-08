@@ -29,6 +29,7 @@ import { AddFaltaModal } from "@/components/modalAddFalta"
 import { useFaltasByEmpleado } from "@/hooks/useFaltasAdministrativas"
 import { UpdateContratoModal } from "@/components/modalUpdateContrato"
 import { ReplaceContratoModal } from "@/components/modalReplaceContrato"
+import { UpdateEventoModal } from "@/components/modalUpdateEvento"
 import { Contrato } from "@/types/Contrato"
 
 function formatFecha(fecha: string): string {
@@ -205,6 +206,7 @@ export default function EmpleadoPage() {
   const [incidenciaModalOpen, setIncidenciaModalOpen] = useState(false)
   const [faltaModalOpen, setFaltaModalOpen] = useState(false)
   const [eventoModalOpen, setEventoModalOpen] = useState(false)
+  const [updateEvento, setUpdateEvento] = useState<any | null>(null)
   const [contratoModalOpen, setContratoModalOpen] = useState(false)
   const [historialContratosOpen, setHistorialContratosOpen] = useState(false)
 
@@ -226,7 +228,12 @@ export default function EmpleadoPage() {
   const { empleado, loading: loadingEmpleado } = useEmpleado(empleadoId)
   const { listado, loading: loadingDocs, refetch: refetchDocs, reemplazar: reemplazarDocumento } = useListadoDocumentos(empleadoId)
   const { incidencias, loading: loadingIncidencias, refetch: refetchIncidencias, actualizar: actualizarIncidencia } = useIncidenciasByEmpleado(empleadoId)
-  const { eventos, loading: loadingEventos, refetch: refetchEventos } = useEventosByEmpleado(empleadoId)
+  const {
+    eventos,
+    loading: loadingEventos,
+    refetch: refetchEventos,
+    actualizar: actualizarEvento
+  } = useEventosByEmpleado(empleadoId)
   const { descargarPdf, loading: loadingPdf } = useHojaVida(empleadoId)
   const {
     contratoVigente,
@@ -571,6 +578,9 @@ export default function EmpleadoPage() {
                         <TableHead className="text-primary-foreground font-semibold text-center py-3 text-xs uppercase tracking-wider">Cargo anterior</TableHead>
                         <TableHead className="text-primary-foreground font-semibold text-center py-3 text-xs uppercase tracking-wider">Cargo nuevo</TableHead>
                         <TableHead className="text-primary-foreground font-semibold text-center py-3 text-xs uppercase tracking-wider">Salario</TableHead>
+                        <TableHead className="text-primary-foreground font-semibold text-center py-3 text-xs uppercase tracking-wider">
+                          Acciones
+                        </TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -581,6 +591,17 @@ export default function EmpleadoPage() {
                           <TableCell className="text-center py-3.5 text-sm text-muted-foreground">{ev.cargo_anterior ?? "—"}</TableCell>
                           <TableCell className="text-center py-3.5 text-sm text-muted-foreground">{ev.cargo_nuevo ?? "—"}</TableCell>
                           <TableCell className="text-center py-3.5 text-sm text-primary font-medium">{ev.salario_nuevo ? `$${Number(ev.salario_nuevo).toLocaleString("es-MX")}` : "—"}</TableCell>
+                          <TableCell className="text-center py-3.5">
+                            {!esInactivo && (
+                              <button
+                                onClick={() => setUpdateEvento(ev)}
+                                className="inline-flex items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground font-medium bg-muted hover:bg-muted/80 px-2.5 py-1.5 rounded-lg transition-colors"
+                              >
+                                <Pencil className="w-3 h-3" />
+                                Editar
+                              </button>
+                            )}
+                          </TableCell>
                         </TableRow>
                       ))}
                     </TableBody>
@@ -609,6 +630,16 @@ export default function EmpleadoPage() {
             id_empleado={empleadoId}
             cargoActual={empleado?.puesto ?? ""}
             salarioActual={empleado?.salario_actual ? Number(empleado.salario_actual) : undefined}
+          />
+          <UpdateEventoModal
+            open={!!updateEvento}
+            onClose={() => setUpdateEvento(null)}
+            evento={updateEvento}
+            onUpdate={actualizarEvento}
+            onSuccess={() => {
+              setUpdateEvento(null)
+              refetchEventos()
+            }}
           />
           <AddContratoModal open={contratoModalOpen} onClose={() => setContratoModalOpen(false)} onSuccess={() => { setContratoModalOpen(false); refetchContratos() }} id_empleado={empleadoId} contratoVigenteId={contratoVigente?.id_contrato} />
           <UpdateDocModal open={!!updateDoc} onClose={() => setUpdateDoc(null)} onSuccess={() => { setUpdateDoc(null); refetchDocs() }} id_empleado={empleadoId} id_tipo_doc={updateDoc?.id_tipo_doc ?? 0} nombre_doc={updateDoc?.nombre_doc ?? ""} />
